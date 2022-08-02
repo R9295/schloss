@@ -15,3 +15,11 @@ func CheckUntrackedFiles(fileName string) ([]string, int) {
 	untrackedLockfiles := reUntracked.FindAllString(string(untrackedFiles), -1)
 	return untrackedLockfiles, len(untrackedLockfiles)
 }
+
+func GetGitDiff() string {
+	diff, err := exec.Command("git", "diff", "HEAD").Output()
+	if err != nil {
+		panic(err)
+	}
+	return string(diff)
+}

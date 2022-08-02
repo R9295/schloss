@@ -3,8 +3,10 @@ package main
 import (
 	"fmt"
 	"log"
+	"regexp"
 
 	"github.com/jessevdk/go-flags"
+	"github.com/waigani/diffparser"
 )
 
 var opts struct {
@@ -31,5 +33,12 @@ func main() {
 			return
 		}
 	}
-	
+	diff, _ := diffparser.Parse(GetGitDiff())
+	lockFileRegex := regexp.MustCompile(fmt.Sprintf("%s", lockFileStruct.fileName))
+	for _, file := range diff.Files {
+		// We don't care about deleted (0) or created (2) modes so we only want modified (1)
+		if lockFileRegex.MatchString(file.NewName) && file.Mode == 1 {
+			fmt.Printf("Lockfile %s edited\n", file.NewName)
+		}
+	}
 }
