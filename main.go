@@ -19,8 +19,9 @@ func main() {
 		log.Fatalf("%s", err)
 	}
 	fmt.Printf("Running schloss for %s type: %s\n", opts.LockfilePath, opts.LockfileType)
+	lockFileStruct := GetLockFileType(opts.LockfileType)
 	if !opts.IgnoreUntracked {
-		untrackedLogFiles, amount := CheckUntrackedFiles("test.test")
+		untrackedLogFiles, amount := CheckUntrackedFiles(lockFileStruct.fileName)
 		if amount > 0 {
 			fmt.Println("Error: You have untracked lockfiles. Please add them to source control.")
 			for _, file := range untrackedLogFiles {
@@ -30,4 +31,5 @@ func main() {
 			return
 		}
 	}
+	
 }
