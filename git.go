@@ -16,8 +16,17 @@ func CheckUntrackedFiles(fileName string) ([]string, int) {
 	return untrackedLockfiles, len(untrackedLockfiles)
 }
 
-func GetGitDiff() string {
+func GetAllDiff() string {
 	diff, err := exec.Command("git", "diff", "HEAD").Output()
+	if err != nil {
+		panic(err)
+	}
+	return string(diff)
+}
+
+func GetSingleDiff(filePath string) string {
+	fmt.Println(filePath)
+	diff, err := exec.Command("git", "diff", "HEAD", "-U99999", filePath).Output()
 	if err != nil {
 		panic(err)
 	}
