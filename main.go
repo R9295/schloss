@@ -21,6 +21,7 @@ func main() {
 		log.Fatalf("%s", err)
 	}
 	fmt.Printf("Running schloss for %s type: %s\n", opts.LockfilePath, opts.LockfileType)
+	fmt.Println("----------------------------------------------------------------------")
 	lockFileStruct := GetLockFileType(opts.LockfileType)
 	if !opts.IgnoreUntracked {
 		untrackedLogFiles, amount := CheckUntrackedFiles(lockFileStruct.fileName)
