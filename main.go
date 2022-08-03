@@ -22,29 +22,28 @@ type PoetryLockfileMetadataFile struct {
 }
 type PoetryLockfile struct {
 	Package []struct {
-		Name string
-		Version string
+		Name         string
+		Version      string
 		Dependencies map[string]interface{}
 	}
 	Metadata struct {
 		PythonVersions string `toml:"python-versions"`
-		ContentHash string `toml:"content-hash"`
-		LockVersion string `toml:"lock-version"`
-		Files map[string][]PoetryLockfileMetadataFile
+		ContentHash    string `toml:"content-hash"`
+		LockVersion    string `toml:"lock-version"`
+		Files          map[string][]PoetryLockfileMetadataFile
 	}
 }
-
 
 func main() {
 	_, err := flags.Parse(&opts)
 	if err != nil {
-		log.Fatalf("%s", err)
+		log.Fatal(err)
 	}
 	fmt.Printf("Running schloss for %s type: %s\n", opts.LockfilePath, opts.LockfileType)
 	fmt.Println("----------------------------------------------------------------------")
-	lockFileStruct := GetLockFileType(opts.LockfileType)
+	lockfileStruct := GetLockfileType(opts.LockfileType)
 	if !opts.IgnoreUntracked {
-		untrackedLockfiles, amount := CheckUntrackedFiles(lockFileStruct.fileName)
+		untrackedLockfiles, amount := CheckUntrackedFiles(lockfileStruct.fileName)
 		if amount > 0 {
 			fmt.Println("Error: You have untracked lockfiles. Please add them to source control.")
 			for _, file := range untrackedLockfiles {
@@ -55,33 +54,24 @@ func main() {
 		}
 	}
 	gitDiff, _ := diffparser.Parse(GetAllDiff())
-	lockFileRegex := regexp.MustCompile(lockFileStruct.fileName)
+	lockfileRegex := regexp.MustCompile(lockfileStruct.fileName)
 	for _, file := range gitDiff.Files {
-		if lockFileRegex.MatchString(file.NewName) && file.Mode == diffparser.MODIFIED {
+		if lockfileRegex.MatchString(file.NewName) && file.Mode == diffparser.MODIFIED {
 			fmt.Printf("Lockfile %s modified\n", file.NewName)
 			lockfileDiff, _ := diffparser.Parse(GetSingleDiff(file.NewName))
-			newFile := ""
-			oldFile := ""
+			newLockfile := ""
+			oldLockfile := ""
 			file = lockfileDiff.Files[0]
-			for _, hunk := range file.Hunks {
-				for _, line := range hunk.WholeRange.Lines {
-					switch line.Mode {
-					case diffparser.ADDED:
-						newFile = fmt.Sprintf("%s\n%s", newFile, line.Content)
-					case diffparser.REMOVED:
-						oldFile = fmt.Sprintf("%s\n%s", oldFile, line.Content)
-					case diffparser.UNCHANGED:
-						oldFile = fmt.Sprintf("%s\n%s", oldFile, line.Content)
-						newFile = fmt.Sprintf("%s\n%s", newFile, line.Content)
-					}
-				}
+			GetLockfileFromDiff(&newLockfile, &oldLockfile, file)
+			var newLockfileToml PoetryLockfile
+			var oldLockfileToml PoetryLockfile
+			DecodeToml(newLockfile, &newLockfileToml)
+			DecodeToml(oldLockfile, &oldLockfileToml)
+			changelog, err := diff.Diff(oldLockfileToml, newLockfileToml)
+			if err != nil {
+				log.Fatal(err)
 			}
-			var newFileToml PoetryLockfile
-			var oldFileToml PoetryLockfile
-			decodeToml(newFile, &newFileToml)
-			decodeToml(oldFile, &oldFileToml)
-			changelog, err := diff.Diff(oldFileToml, newFileToml)
-			for _, item := range changelog{
+			for _, item := range changelog {
 				fmt.Println(item.Path)
 				fmt.Println(item.Type)
 				fmt.Println()
