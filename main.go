@@ -44,10 +44,10 @@ func main() {
 	fmt.Println("----------------------------------------------------------------------")
 	lockFileStruct := GetLockFileType(opts.LockfileType)
 	if !opts.IgnoreUntracked {
-		untrackedLogFiles, amount := CheckUntrackedFiles(lockFileStruct.fileName)
+		untrackedLockfiles, amount := CheckUntrackedFiles(lockFileStruct.fileName)
 		if amount > 0 {
 			fmt.Println("Error: You have untracked lockfiles. Please add them to source control.")
-			for _, file := range untrackedLogFiles {
+			for _, file := range untrackedLockfiles {
 				fmt.Println(file)
 			}
 			fmt.Println("If you think this is a bug, you can silence it with --ignore-untracked and file a bug report")
