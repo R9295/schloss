@@ -5,6 +5,7 @@ import (
 	"log"
 	"regexp"
 
+	"github.com/BurntSushi/toml"
 	"github.com/jessevdk/go-flags"
 	"github.com/waigani/diffparser"
 )
@@ -14,6 +15,25 @@ var opts struct {
 	LockfilePath    string `short:"p" long:"path" description:"Path to lockfile" required:"true"`
 	IgnoreUntracked bool   `long:"ignore-untracked" description:"Ignore Untracked Log Files"`
 }
+
+type PoetryLockfileMetadataFile struct {
+	File string
+	Hash string
+}
+type PoetryLockfile struct {
+	Package []struct {
+		Name string
+		Version string
+		Dependencies map[string]interface{}
+	}
+	Metadata struct {
+		PythonVersions string `toml:"python-versions"`
+		ContentHash string `toml:"content-hash"`
+		LockVersion string `toml:"lock-version"`
+		Files map[string][]PoetryLockfileMetadataFile
+	}
+}
+
 
 func main() {
 	_, err := flags.Parse(&opts)
@@ -37,9 +57,8 @@ func main() {
 	diff, _ := diffparser.Parse(GetAllDiff())
 	lockFileRegex := regexp.MustCompile(lockFileStruct.fileName)
 	for _, file := range diff.Files {
-		// We don't care about deleted (0) or created (2) modes so we only want modified (1)
-		if lockFileRegex.MatchString(file.NewName) && file.Mode == 1 {
-			fmt.Printf("Lockfile %s edited\n", file.NewName)
+		if lockFileRegex.MatchString(file.NewName) && file.Mode == diffparser.MODIFIED {
+			fmt.Printf("Lockfile %s modified\n", file.NewName)
 			lockfileDiff, _ := diffparser.Parse(GetSingleDiff(file.NewName))
 			newFile := ""
 			oldFile := ""
@@ -57,7 +76,14 @@ func main() {
 					}
 				}
 			}
-			fmt.Println(newFile)
+			var newFileToml PoetryLockfile
+			var oldFileToml PoetryLockfile
+			_, err := toml.Decode(newFile, &newFileToml)
+			_, err = toml.Decode(oldFile, &oldFileToml)
+			if err != nil {
+				log.Fatal(err)
+			}
+			fmt.Println(newFileToml, oldFileToml)
 		}
 	}
 }
