@@ -1,6 +1,10 @@
 package main
 
-import "log"
+import (
+	"log"
+
+	"github.com/BurntSushi/toml"
+)
 
 type LockFileType struct {
 	fileName string
@@ -18,4 +22,11 @@ func GetLockFileType(lockFileType string) LockFileType {
 	}
 	log.Fatalf("Unsupported lockfile type %s", lockFileType)
 	return LockFileType{}
+}
+
+func decodeToml(text string, lockFileStruct *PoetryLockfile) {
+	_, err := toml.Decode(text, lockFileStruct)
+	if err != nil {
+		log.Fatal(err)
+	}
 }

@@ -5,8 +5,8 @@ import (
 	"log"
 	"regexp"
 
-	"github.com/BurntSushi/toml"
 	"github.com/jessevdk/go-flags"
+	diff "github.com/r3labs/diff/v3"
 	"github.com/waigani/diffparser"
 )
 
@@ -54,9 +54,9 @@ func main() {
 			return
 		}
 	}
-	diff, _ := diffparser.Parse(GetAllDiff())
+	gitDiff, _ := diffparser.Parse(GetAllDiff())
 	lockFileRegex := regexp.MustCompile(lockFileStruct.fileName)
-	for _, file := range diff.Files {
+	for _, file := range gitDiff.Files {
 		if lockFileRegex.MatchString(file.NewName) && file.Mode == diffparser.MODIFIED {
 			fmt.Printf("Lockfile %s modified\n", file.NewName)
 			lockfileDiff, _ := diffparser.Parse(GetSingleDiff(file.NewName))
@@ -78,12 +78,14 @@ func main() {
 			}
 			var newFileToml PoetryLockfile
 			var oldFileToml PoetryLockfile
-			_, err := toml.Decode(newFile, &newFileToml)
-			_, err = toml.Decode(oldFile, &oldFileToml)
-			if err != nil {
-				log.Fatal(err)
+			decodeToml(newFile, &newFileToml)
+			decodeToml(oldFile, &oldFileToml)
+			changelog, err := diff.Diff(oldFileToml, newFileToml)
+			for _, item := range changelog{
+				fmt.Println(item.Path)
+				fmt.Println(item.Type)
+				fmt.Println()
 			}
-			fmt.Println(newFileToml, oldFileToml)
 		}
 	}
 }
