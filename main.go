@@ -53,11 +53,7 @@ func main() {
 			if err != nil {
 				log.Fatal(err)
 			}
-			for _, item := range changelog {
-				fmt.Println(item.Path)
-				fmt.Println(item.Type)
-				fmt.Println()
-			}
+			poetryCheckNewPackages(&changelog)
 		}
 	}
 }
