@@ -14,12 +14,10 @@ type LockFileType struct {
 
 func GetLockfileType(lockfileType string) LockFileType {
 	switch lockfileType {
-	case "yarn":
-		return LockFileType{FileName: "yarn.lock", Format: "json"}
+	case "cargo":
+		return LockFileType{FileName: "Cargo.lock", Format: "toml"}
 	case "poetry":
 		return LockFileType{FileName: "poetry.lock", Format: "toml"}
-	case "npm":
-		return LockFileType{FileName: "package-lock.json", Format: "json"}
 	}
 	log.Fatalf("Unsupported lockfile type %s", lockfileType)
 	return LockFileType{}
