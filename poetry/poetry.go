@@ -5,6 +5,8 @@ import (
 	"log"
 	"reflect"
 
+	"github.com/R9295/schloss/core"
+
 	"github.com/BurntSushi/toml"
 )
 
@@ -29,14 +31,6 @@ type Lockfile struct {
 	}
 }
 
-type Diff struct {
-	// The Type of Diff
-	Type     string
-	Name     string
-	MetaType string
-	Text     string
-}
-
 func collectPackagesAsMap(lockFileToml *Lockfile) map[string]LockfilePackage {
 	packages := make(map[string]LockfilePackage)
 	for _, pkg := range lockFileToml.Package {
@@ -57,10 +51,10 @@ func extractVersionValue(version interface{}) string {
 	}
 	return ""
 }
-func diffPackages(oldPkg *LockfilePackage, newPkg *LockfilePackage, diffList []Diff) []Diff {
+func diffPackages(oldPkg *LockfilePackage, newPkg *LockfilePackage, diffList []core.Diff) []core.Diff {
 	if oldPkg.Version != newPkg.Version {
 		diffList = append(diffList,
-			Diff{
+			core.Diff{
 				Type:     "MODIFIED",
 				MetaType: "DEPENDENCY",
 				Name:     newPkg.Name,
@@ -73,7 +67,7 @@ func diffPackages(oldPkg *LockfilePackage, newPkg *LockfilePackage, diffList []D
 		newPkgDepVersion, exists := newPkg.Dependencies[oldPkgDep]
 		if !exists {
 			diffList = append(diffList,
-				Diff{
+				core.Diff{
 					Type:     "REMOVED",
 					MetaType: "SUB_DEPENDENCY",
 					Name:     oldPkgDep,
@@ -84,7 +78,7 @@ func diffPackages(oldPkg *LockfilePackage, newPkg *LockfilePackage, diffList []D
 			oldPkgDepVersionValue := extractVersionValue(oldPkgDepVersion)
 			if oldPkgDepVersionValue != newPkgDepVersionValue {
 				diffList = append(diffList,
-					Diff{
+					core.Diff{
 						Type:     "MODIFIED",
 						MetaType: "SUB_DEPENDENCY",
 						Name:     oldPkgDep,
@@ -99,7 +93,7 @@ func diffPackages(oldPkg *LockfilePackage, newPkg *LockfilePackage, diffList []D
 	}
 	for newPkgDep, newPkgDepVersion := range newPkg.Dependencies {
 		diffList = append(diffList,
-			Diff{
+			core.Diff{
 				Type:     "ADDED",
 				MetaType: "SUB_DEPENDENCY",
 				Name:     newPkgDep,
@@ -111,14 +105,14 @@ func diffPackages(oldPkg *LockfilePackage, newPkg *LockfilePackage, diffList []D
 	return diffList
 }
 
-func DiffLockfiles(oldLockfileToml *Lockfile, newLockfileToml *Lockfile) []Diff {
-	diffList := make([]Diff, 0)
+func DiffLockfiles(oldLockfileToml *Lockfile, newLockfileToml *Lockfile) []core.Diff {
+	diffList := make([]core.Diff, 0)
 	oldPkgs := collectPackagesAsMap(oldLockfileToml)
 	newPkgs := collectPackagesAsMap(newLockfileToml)
 	for oldPkgName, oldPkgValue := range oldPkgs {
 		newPkgValue, exists := newPkgs[oldPkgName]
 		if !exists {
-			diffList = append(diffList, Diff{
+			diffList = append(diffList, core.Diff{
 				Type:     "REMOVED",
 				MetaType: "DEPENDENCY",
 				Name:     oldPkgName,
@@ -130,7 +124,7 @@ func DiffLockfiles(oldLockfileToml *Lockfile, newLockfileToml *Lockfile) []Diff 
 	}
 	for newPkgName, newPkgValue := range newPkgs {
 		diffList = append(diffList,
-			Diff{
+			core.Diff{
 				Type:     "ADDED",
 				MetaType: "DEPENDENCY",
 				Name:     newPkgName,

@@ -3,6 +3,8 @@ package poetry
 import (
 	"testing"
 
+	"github.com/R9295/schloss/core"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -38,10 +40,10 @@ func TestDiffPackagesPackageVersion(t *testing.T) {
 		Name:    "parserkiosk",
 		Version: "0.3.1",
 	}
-	diffList := make([]Diff, 0)
+	diffList := make([]core.Diff, 0)
 	diffList = diffPackages(&oldPkg, &newPkg, diffList)
 	assert.Equal(t, len(diffList), 1)
-	assert.Equal(t, diffList[0], Diff{
+	assert.Equal(t, diffList[0], core.Diff{
 		Type:     "MODIFIED",
 		MetaType: "DEPENDENCY",
 		Name:     "parserkiosk",
@@ -71,7 +73,7 @@ func TestDiffPackagesRemovePackage(t *testing.T) {
 	}}
 	diffList := DiffLockfiles(&oldLockfile, &newLockfile)
 	assert.Equal(t, len(diffList), 1)
-	assert.Equal(t, diffList[0], Diff{
+	assert.Equal(t, diffList[0], core.Diff{
 		Type:     "REMOVED",
 		MetaType: "DEPENDENCY",
 		Name:     "black",
@@ -101,7 +103,7 @@ func TestDiffPackagesAddPackage(t *testing.T) {
 	}}
 	diffList := DiffLockfiles(&oldLockfile, &newLockfile)
 	assert.Equal(t, len(diffList), 1)
-	assert.Equal(t, diffList[0], Diff{
+	assert.Equal(t, diffList[0], core.Diff{
 		Type:     "ADDED",
 		MetaType: "DEPENDENCY",
 		Name:     "black",
@@ -122,10 +124,10 @@ func TestDiffPackagesPackageRemoveSubDependency(t *testing.T) {
 		Version:      "42.0",
 		Dependencies: map[string]interface{}{},
 	}
-	diffList := make([]Diff, 0)
+	diffList := make([]core.Diff, 0)
 	diffList = diffPackages(&old, &new, diffList)
 	assert.Equal(t, len(diffList), 1)
-	assert.Equal(t, diffList[0], Diff{
+	assert.Equal(t, diffList[0], core.Diff{
 		Type:     "REMOVED",
 		MetaType: "SUB_DEPENDENCY",
 		Name:     "MarkupSafe",
@@ -148,10 +150,10 @@ func TestDiffPackagesPackageModifySubDependency(t *testing.T) {
 			"MarkupSafe": ">=3.0",
 		},
 	}
-	diffList := make([]Diff, 0)
+	diffList := make([]core.Diff, 0)
 	diffList = diffPackages(&old, &new, diffList)
 	assert.Equal(t, len(diffList), 1)
-	assert.Equal(t, diffList[0], Diff{
+	assert.Equal(t, diffList[0], core.Diff{
 		Type:     "MODIFIED",
 		MetaType: "SUB_DEPENDENCY",
 		Name:     "MarkupSafe",
@@ -173,10 +175,10 @@ func TestDiffPackagesPackageAddSubDependency(t *testing.T) {
 			"MarkupSafe": ">=2.0",
 		},
 	}
-	diffList := make([]Diff, 0)
+	diffList := make([]core.Diff, 0)
 	diffList = diffPackages(&old, &new, diffList)
 	assert.Equal(t, len(diffList), 1)
-	assert.Equal(t, diffList[0], Diff{
+	assert.Equal(t, diffList[0], core.Diff{
 		Type:     "ADDED",
 		MetaType: "SUB_DEPENDENCY",
 		Name:     "MarkupSafe",
@@ -199,10 +201,10 @@ func TestDiffPackagesPackageModifySubDependencyWithVersionMap(t *testing.T) {
 			"tzdata": ">=2.0",
 		},
 	}
-	diffList := make([]Diff, 0)
+	diffList := make([]core.Diff, 0)
 	diffList = diffPackages(&oldLockfile.Package[0], &new, diffList)
 	assert.Equal(t, len(diffList), 1)
-	assert.Equal(t, diffList[0], Diff{
+	assert.Equal(t, diffList[0], core.Diff{
 		Type:     "MODIFIED",
 		MetaType: "SUB_DEPENDENCY",
 		Name:     "tzdata",
