@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"log"
 	"regexp"
+	"time"
 
+	"github.com/R9295/schloss/poetry"
 	"github.com/jessevdk/go-flags"
-	diff "github.com/r3labs/diff/v3"
 	"github.com/waigani/diffparser"
 )
 
@@ -21,8 +22,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Println("----------------------------------------------------------------------")
 	fmt.Printf("Running schloss for %s type: %s\n", opts.LockfilePath, opts.LockfileType)
 	fmt.Println("----------------------------------------------------------------------")
+	start := time.Now()
 	lockfileStruct := GetLockfileType(opts.LockfileType)
 	if !opts.IgnoreUntracked {
 		untrackedLockfiles, amount := CheckUntrackedFiles(lockfileStruct.fileName)
@@ -45,15 +48,17 @@ func main() {
 			oldLockfile := ""
 			file = lockfileDiff.Files[0]
 			GetLockfileFromDiff(&newLockfile, &oldLockfile, file)
-			var newLockfileToml PoetryLockfile
-			var oldLockfileToml PoetryLockfile
-			DecodeToml(newLockfile, &newLockfileToml)
-			DecodeToml(oldLockfile, &oldLockfileToml)
-			changelog, err := diff.Diff(oldLockfileToml, newLockfileToml)
-			if err != nil {
-				log.Fatal(err)
+			var newLockfileToml poetry.Lockfile
+			var oldLockfileToml poetry.Lockfile
+			poetry.DecodeToml(newLockfile, &newLockfileToml)
+			poetry.DecodeToml(oldLockfile, &oldLockfileToml)
+			diffList := poetry.DiffLockfiles(&oldLockfileToml, &newLockfileToml)
+			for _, item := range diffList {
+				fmt.Println(fmt.Sprintf("%s %s %s %s", item.Type, item.MetaType, item.Name, item.Text))
 			}
-			poetryCheckNewPackages(&changelog)
 		}
 	}
+	fmt.Println("----------------------------------------------------------------------")
+	fmt.Println(fmt.Sprintf("Time elapsed: %s", time.Since(start)))
+	fmt.Println("----------------------------------------------------------------------")
 }

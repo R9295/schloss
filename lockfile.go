@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/BurntSushi/toml"
 	"github.com/waigani/diffparser"
 )
 
@@ -24,13 +23,6 @@ func GetLockfileType(lockfileType string) LockFileType {
 	}
 	log.Fatalf("Unsupported lockfile type %s", lockfileType)
 	return LockFileType{}
-}
-
-func DecodeToml(text string, lockfileStruct *PoetryLockfile) {
-	_, err := toml.Decode(text, lockfileStruct)
-	if err != nil {
-		log.Fatal(err)
-	}
 }
 
 func GetLockfileFromDiff(newLockfile *string, oldLockfile *string, lockfileDiffFile *diffparser.DiffFile) {
