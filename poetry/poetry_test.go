@@ -44,8 +44,8 @@ func TestDiffPackagesPackageVersion(t *testing.T) {
 	diffList = diffPackages(&oldPkg, &newPkg, diffList)
 	assert.Equal(t, len(diffList), 1)
 	assert.Equal(t, diffList[0], core.Diff{
-		Type:     "MODIFIED",
-		MetaType: "DEPENDENCY",
+		Type:     core.MODIFIED,
+		MetaType: core.DEPENDENCY,
 		Name:     "parserkiosk",
 		Text:     "(old)version=0.3.0 & (new)version=0.3.1",
 	})
@@ -74,8 +74,8 @@ func TestDiffPackagesRemovePackage(t *testing.T) {
 	diffList := DiffLockfiles(&oldLockfile, &newLockfile)
 	assert.Equal(t, len(diffList), 1)
 	assert.Equal(t, diffList[0], core.Diff{
-		Type:     "REMOVED",
-		MetaType: "DEPENDENCY",
+		Type:     core.REMOVED,
+		MetaType: core.DEPENDENCY,
 		Name:     "black",
 		Text:     "",
 	})
@@ -104,8 +104,8 @@ func TestDiffPackagesAddPackage(t *testing.T) {
 	diffList := DiffLockfiles(&oldLockfile, &newLockfile)
 	assert.Equal(t, len(diffList), 1)
 	assert.Equal(t, diffList[0], core.Diff{
-		Type:     "ADDED",
-		MetaType: "DEPENDENCY",
+		Type:     core.ADDED,
+		MetaType: core.DEPENDENCY,
 		Name:     "black",
 		Text:     "version=22.6.0",
 	})
@@ -128,8 +128,8 @@ func TestDiffPackagesPackageRemoveSubDependency(t *testing.T) {
 	diffList = diffPackages(&old, &new, diffList)
 	assert.Equal(t, len(diffList), 1)
 	assert.Equal(t, diffList[0], core.Diff{
-		Type:     "REMOVED",
-		MetaType: "SUB_DEPENDENCY",
+		Type:     core.REMOVED,
+		MetaType: core.SUB_DEPENDENCY,
 		Name:     "MarkupSafe",
 		Text:     "of jinja2",
 	})
@@ -154,8 +154,8 @@ func TestDiffPackagesPackageModifySubDependency(t *testing.T) {
 	diffList = diffPackages(&old, &new, diffList)
 	assert.Equal(t, len(diffList), 1)
 	assert.Equal(t, diffList[0], core.Diff{
-		Type:     "MODIFIED",
-		MetaType: "SUB_DEPENDENCY",
+		Type:     core.MODIFIED,
+		MetaType: core.SUB_DEPENDENCY,
 		Name:     "MarkupSafe",
 		Text:     "of jinja2 | (old)version=>=2.0 & (new)version=>=3.0",
 	})
@@ -179,8 +179,8 @@ func TestDiffPackagesPackageAddSubDependency(t *testing.T) {
 	diffList = diffPackages(&old, &new, diffList)
 	assert.Equal(t, len(diffList), 1)
 	assert.Equal(t, diffList[0], core.Diff{
-		Type:     "ADDED",
-		MetaType: "SUB_DEPENDENCY",
+		Type:     core.ADDED,
+		MetaType: core.SUB_DEPENDENCY,
 		Name:     "MarkupSafe",
 		Text:     "of jinja2 | version=>=2.0",
 	})
@@ -205,8 +205,8 @@ func TestDiffPackagesPackageModifySubDependencyWithVersionMap(t *testing.T) {
 	diffList = diffPackages(&oldLockfile.Package[0], &new, diffList)
 	assert.Equal(t, len(diffList), 1)
 	assert.Equal(t, diffList[0], core.Diff{
-		Type:     "MODIFIED",
-		MetaType: "SUB_DEPENDENCY",
+		Type:     core.MODIFIED,
+		MetaType: core.SUB_DEPENDENCY,
 		Name:     "tzdata",
 		Text:     "of django | (old)version=* & (new)version=>=2.0",
 	})

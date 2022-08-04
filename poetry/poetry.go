@@ -55,8 +55,8 @@ func diffPackages(oldPkg *LockfilePackage, newPkg *LockfilePackage, diffList []c
 	if oldPkg.Version != newPkg.Version {
 		diffList = append(diffList,
 			core.Diff{
-				Type:     "MODIFIED",
-				MetaType: "DEPENDENCY",
+				Type:     core.MODIFIED,
+				MetaType: core.DEPENDENCY,
 				Name:     newPkg.Name,
 				Text: fmt.Sprintf("(old)version=%s & (new)version=%s",
 					oldPkg.Version,
@@ -68,8 +68,8 @@ func diffPackages(oldPkg *LockfilePackage, newPkg *LockfilePackage, diffList []c
 		if !exists {
 			diffList = append(diffList,
 				core.Diff{
-					Type:     "REMOVED",
-					MetaType: "SUB_DEPENDENCY",
+					Type:     core.REMOVED,
+					MetaType: core.SUB_DEPENDENCY,
 					Name:     oldPkgDep,
 					Text:     fmt.Sprintf("of %s", oldPkg.Name),
 				})
@@ -79,8 +79,8 @@ func diffPackages(oldPkg *LockfilePackage, newPkg *LockfilePackage, diffList []c
 			if oldPkgDepVersionValue != newPkgDepVersionValue {
 				diffList = append(diffList,
 					core.Diff{
-						Type:     "MODIFIED",
-						MetaType: "SUB_DEPENDENCY",
+						Type:     core.MODIFIED,
+						MetaType: core.SUB_DEPENDENCY,
 						Name:     oldPkgDep,
 						Text: fmt.Sprintf("of %s | (old)version=%s & (new)version=%s",
 							newPkg.Name,
@@ -94,8 +94,8 @@ func diffPackages(oldPkg *LockfilePackage, newPkg *LockfilePackage, diffList []c
 	for newPkgDep, newPkgDepVersion := range newPkg.Dependencies {
 		diffList = append(diffList,
 			core.Diff{
-				Type:     "ADDED",
-				MetaType: "SUB_DEPENDENCY",
+				Type:     core.ADDED,
+				MetaType: core.SUB_DEPENDENCY,
 				Name:     newPkgDep,
 				Text: fmt.Sprintf("of %s | version=%s",
 					newPkg.Name,
@@ -113,8 +113,8 @@ func DiffLockfiles(oldLockfileToml *Lockfile, newLockfileToml *Lockfile) []core.
 		newPkgValue, exists := newPkgs[oldPkgName]
 		if !exists {
 			diffList = append(diffList, core.Diff{
-				Type:     "REMOVED",
-				MetaType: "DEPENDENCY",
+				Type:     core.REMOVED,
+				MetaType: core.DEPENDENCY,
 				Name:     oldPkgName,
 			})
 		} else {
@@ -125,8 +125,8 @@ func DiffLockfiles(oldLockfileToml *Lockfile, newLockfileToml *Lockfile) []core.
 	for newPkgName, newPkgValue := range newPkgs {
 		diffList = append(diffList,
 			core.Diff{
-				Type:     "ADDED",
-				MetaType: "DEPENDENCY",
+				Type:     core.ADDED,
+				MetaType: core.DEPENDENCY,
 				Name:     newPkgName,
 				Text:     fmt.Sprintf("version=%s", newPkgValue.Version),
 			})
