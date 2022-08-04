@@ -6,8 +6,8 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/R9295/schloss/contrib/cargo"
 	"github.com/R9295/schloss/contrib/poetry"
-	"github.com/R9295/schloss/contrib/toml"
 	"github.com/R9295/schloss/core"
 	"github.com/jessevdk/go-flags"
 	"github.com/waigani/diffparser"
@@ -50,11 +50,14 @@ func main() {
 			oldLockfile := ""
 			file = lockfileDiff.Files[0]
 			core.GetLockfileFromDiff(&newLockfile, &oldLockfile, file)
-			var newLockfileToml poetry.Lockfile
-			var oldLockfileToml poetry.Lockfile
-			toml.DecodeToml(newLockfile, &newLockfileToml)
-			toml.DecodeToml(oldLockfile, &oldLockfileToml)
-			diffList := poetry.DiffLockfiles(&oldLockfileToml, &newLockfileToml)
+			var diffList []core.Diff
+			if opts.LockfileType ==  "poetry" {
+				oldLockfileToml, newLockfileToml := poetry.ParseLockfiles(oldLockfile, newLockfile)
+				diffList = poetry.DiffLockfiles(&oldLockfileToml, &newLockfileToml)
+			} else {
+				oldLockfileToml, newLockfileToml:= cargo.ParseLockfiles(oldLockfile, newLockfile)
+				diffList = cargo.DiffLockfiles(&oldLockfileToml, &newLockfileToml)
+			}
 			for _, item := range diffList {
 				fmt.Println(fmt.Sprintf("%s %s %s %s", item.Type, item.MetaType, item.Name, item.Text))
 			}
