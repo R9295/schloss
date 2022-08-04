@@ -52,11 +52,11 @@ func main() {
 			file = lockfileDiff.Files[0]
 			core.GetLockfileFromDiff(&newLockfile, &oldLockfile, file)
 			var diffList []core.Diff
-			if opts.LockfileType ==  "poetry" {
+			if opts.LockfileType == "poetry" {
 				oldLockfileToml, newLockfileToml := toml.ParseLockfiles[poetry.Lockfile](oldLockfile, newLockfile)
 				diffList = poetry.DiffLockfiles(&oldLockfileToml, &newLockfileToml)
 			} else {
-				oldLockfileToml, newLockfileToml:= toml.ParseLockfiles[cargo.Lockfile](oldLockfile, newLockfile)
+				oldLockfileToml, newLockfileToml := toml.ParseLockfiles[cargo.Lockfile](oldLockfile, newLockfile)
 				diffList = cargo.DiffLockfiles(&oldLockfileToml, &newLockfileToml)
 			}
 			for _, item := range diffList {

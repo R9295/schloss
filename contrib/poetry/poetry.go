@@ -84,7 +84,7 @@ func diffPackages(oldPkg *LockfilePackage, newPkg *LockfilePackage, diffList []c
 							oldPkgDepVersionValue,
 							newPkgDepVersionValue),
 					})
-				}
+			}
 			delete(newPkg.Dependencies, oldPkgDep)
 		}
 	}
@@ -130,4 +130,3 @@ func DiffLockfiles(oldLockfileToml *Lockfile, newLockfileToml *Lockfile) []core.
 	}
 	return diffList
 }
-

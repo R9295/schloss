@@ -3,16 +3,16 @@ package core
 type DiffType string
 
 const (
-	ADDED DiffType = "added"
-	MODIFIED = "modified"
-	REMOVED = "removed"
+	ADDED    DiffType = "added"
+	MODIFIED          = "modified"
+	REMOVED           = "removed"
 )
 
 type DiffMetaType string
 
 const (
-	DEPENDENCY DiffMetaType = "dependency"
-	SUB_DEPENDENCY = "sub-dependency"
+	DEPENDENCY     DiffMetaType = "dependency"
+	SUB_DEPENDENCY              = "sub-dependency"
 )
 
 type Diff struct {
