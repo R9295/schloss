@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/R9295/schloss/contrib/poetry"
+	"github.com/R9295/schloss/core"
 	"github.com/jessevdk/go-flags"
 	"github.com/waigani/diffparser"
 )
@@ -26,9 +27,9 @@ func main() {
 	fmt.Printf("Running schloss for %s type: %s\n", opts.LockfilePath, opts.LockfileType)
 	fmt.Println("----------------------------------------------------------------------")
 	start := time.Now()
-	lockfileStruct := GetLockfileType(opts.LockfileType)
+	lockfileStruct := core.GetLockfileType(opts.LockfileType)
 	if !opts.IgnoreUntracked {
-		untrackedLockfiles, amount := CheckUntrackedFiles(lockfileStruct.fileName)
+		untrackedLockfiles, amount := core.CheckUntrackedFiles(lockfileStruct.FileName)
 		if amount > 0 {
 			fmt.Println("Error: You have untracked lockfiles. Please add them to source control.")
 			for _, file := range untrackedLockfiles {
@@ -38,16 +39,16 @@ func main() {
 			return
 		}
 	}
-	gitDiff, _ := diffparser.Parse(GetAllDiff())
-	lockfileRegex := regexp.MustCompile(lockfileStruct.fileName)
+	gitDiff, _ := diffparser.Parse(core.GetAllDiff())
+	lockfileRegex := regexp.MustCompile(lockfileStruct.FileName)
 	for _, file := range gitDiff.Files {
 		if lockfileRegex.MatchString(file.NewName) && file.Mode == diffparser.MODIFIED {
 			fmt.Printf("Lockfile %s modified\n", file.NewName)
-			lockfileDiff, _ := diffparser.Parse(GetSingleDiff(file.NewName))
+			lockfileDiff, _ := diffparser.Parse(core.GetSingleDiff(file.NewName))
 			newLockfile := ""
 			oldLockfile := ""
 			file = lockfileDiff.Files[0]
-			GetLockfileFromDiff(&newLockfile, &oldLockfile, file)
+			core.GetLockfileFromDiff(&newLockfile, &oldLockfile, file)
 			var newLockfileToml poetry.Lockfile
 			var oldLockfileToml poetry.Lockfile
 			poetry.DecodeToml(newLockfile, &newLockfileToml)

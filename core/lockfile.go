@@ -1,4 +1,4 @@
-package main
+package core
 
 import (
 	"fmt"
@@ -8,18 +8,18 @@ import (
 )
 
 type LockFileType struct {
-	fileName string
-	format   string
+	FileName string
+	Format   string
 }
 
 func GetLockfileType(lockfileType string) LockFileType {
 	switch lockfileType {
 	case "yarn":
-		return LockFileType{fileName: "yarn.lock", format: "json"}
+		return LockFileType{FileName: "yarn.lock", Format: "json"}
 	case "poetry":
-		return LockFileType{fileName: "poetry.lock", format: "toml"}
+		return LockFileType{FileName: "poetry.lock", Format: "toml"}
 	case "npm":
-		return LockFileType{fileName: "package-lock.json", format: "json"}
+		return LockFileType{FileName: "package-lock.json", Format: "json"}
 	}
 	log.Fatalf("Unsupported lockfile type %s", lockfileType)
 	return LockFileType{}
