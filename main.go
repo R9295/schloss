@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/R9295/schloss/poetry"
+	"github.com/R9295/schloss/contrib/poetry"
 	"github.com/jessevdk/go-flags"
 	"github.com/waigani/diffparser"
 )
