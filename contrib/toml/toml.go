@@ -12,3 +12,10 @@ func DecodeToml[T any](text string, lockfileStruct T) {
 		log.Fatal(err)
 	}
 }
+func ParseLockfiles[T any](oldLockfile string, newLockfile string) (T, T) {
+	var newLockfileToml T
+	var oldLockfileToml T
+	DecodeToml(newLockfile, &newLockfileToml)
+	DecodeToml(oldLockfile, &oldLockfileToml)
+	return oldLockfileToml, newLockfileToml
+}

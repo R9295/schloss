@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/R9295/schloss/contrib/toml"
 	"github.com/R9295/schloss/core"
 )
 
@@ -132,10 +131,3 @@ func DiffLockfiles(oldLockfileToml *Lockfile, newLockfileToml *Lockfile) []core.
 	return diffList
 }
 
-func ParseLockfiles(oldLockfile string, newLockfile string) (Lockfile, Lockfile) {
-	var newLockfileToml Lockfile
-	var oldLockfileToml Lockfile
-	toml.DecodeToml(newLockfile, &newLockfileToml)
-	toml.DecodeToml(oldLockfile, &oldLockfileToml)
-	return oldLockfileToml, newLockfileToml
-}
