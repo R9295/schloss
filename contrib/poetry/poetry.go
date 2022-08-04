@@ -2,12 +2,9 @@ package poetry
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 
 	"github.com/R9295/schloss/core"
-
-	"github.com/BurntSushi/toml"
 )
 
 type LockfileMetaTypedataFile struct {
@@ -132,11 +129,4 @@ func DiffLockfiles(oldLockfileToml *Lockfile, newLockfileToml *Lockfile) []core.
 			})
 	}
 	return diffList
-}
-
-func DecodeToml(text string, lockfileStruct *Lockfile) {
-	_, err := toml.Decode(text, lockfileStruct)
-	if err != nil {
-		log.Fatal(err)
-	}
 }

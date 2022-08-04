@@ -3,6 +3,7 @@ package poetry
 import (
 	"testing"
 
+	"github.com/R9295/schloss/contrib/toml"
 	"github.com/R9295/schloss/core"
 
 	"github.com/stretchr/testify/assert"
@@ -193,7 +194,7 @@ func TestDiffPackagesPackageModifySubDependencyWithVersionMap(t *testing.T) {
 	[package.dependencies]
 	tzdata = {version = "*", markers = "sys_platform == \"win32\""}`
 	var oldLockfile Lockfile
-	DecodeToml(oldLockfileText, &oldLockfile)
+	toml.DecodeToml(oldLockfileText, &oldLockfile)
 	new := LockfilePackage{
 		Name:    "django",
 		Version: "4.0.6",
