@@ -26,11 +26,47 @@ func collectPackagesAsMap(lockFilePkgs []LockfilePackage) map[string]LockfilePac
 	return packages
 }
 
+func generateFieldDiff(pkgName string, fieldName string, oldVal string, newVal string) core.Diff {
+	return core.Diff{
+		Type:     core.MODIFIED,
+		MetaType: core.DEPENDENCY,
+		Name:     pkgName,
+		Text:     fmt.Sprintf("(old)%s=%s & (new)%s=%s", fieldName, oldVal, fieldName, newVal),
+	}
+}
+func diffPackages(oldPkg *LockfilePackage, newPkg *LockfilePackage, diffList []core.Diff) []core.Diff {
+	if oldPkg.Version != newPkg.Version {
+		diffList = append(diffList,
+			generateFieldDiff(newPkg.Name,
+					"version",
+					oldPkg.Version,
+					newPkg.Version),
+			)
+	}
+	if oldPkg.Checksum != newPkg.Checksum {
+		diffList = append(diffList,
+			generateFieldDiff(newPkg.Name,
+					"checksum",
+					oldPkg.Checksum,
+					newPkg.Checksum),
+			)
+	}
+	if oldPkg.Source != newPkg.Source {
+		diffList = append(diffList,
+			generateFieldDiff(newPkg.Name,
+					"source",
+					oldPkg.Source,
+					newPkg.Source),
+			)
+	}
+	return diffList
+}
+
 func DiffLockfiles(oldLockfileToml *Lockfile, newLockfileToml *Lockfile) []core.Diff {
 	diffList := make([]core.Diff, 0)
 	oldPkgs := collectPackagesAsMap(oldLockfileToml.Package)
 	newPkgs := collectPackagesAsMap(newLockfileToml.Package)
-	for oldPkgName, _ := range oldPkgs {
+	for oldPkgName := range oldPkgs {
 		_, exists := newPkgs[oldPkgName]
 		if !exists {
 			diffList = append(diffList, core.Diff{
