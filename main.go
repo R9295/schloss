@@ -54,7 +54,7 @@ func main() {
 			poetry.DecodeToml(oldLockfile, &oldLockfileToml)
 			diffList := poetry.DiffLockfiles(&oldLockfileToml, &newLockfileToml)
 			for _, item := range diffList {
-				fmt.Println(fmt.Sprintf("%d %d %s %s", item.Type, item.MetaType, item.Name, item.Text))
+				fmt.Println(fmt.Sprintf("%s %s %s %s", item.Type, item.MetaType, item.Name, item.Text))
 			}
 		}
 	}

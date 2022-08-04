@@ -1,18 +1,18 @@
 package core
 
-type DiffType int
+type DiffType string
 
 const (
-	ADDED DiffType = iota
-	MODIFIED
-	REMOVED
+	ADDED DiffType = "added"
+	MODIFIED = "modified"
+	REMOVED = "removed"
 )
 
-type DiffMetaType int
+type DiffMetaType string
 
 const (
-	DEPENDENCY DiffMetaType = iota
-	SUB_DEPENDENCY
+	DEPENDENCY DiffMetaType = "dependency"
+	SUB_DEPENDENCY = "sub-dependency"
 )
 
 type Diff struct {
