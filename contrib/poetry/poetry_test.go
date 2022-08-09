@@ -183,7 +183,7 @@ func TestDiffPackagesPackageAddSubDependency(t *testing.T) {
 		Type:     core.ADDED,
 		MetaType: core.SUB_DEPENDENCY,
 		Name:     "MarkupSafe",
-		Text:     "of jinja2 | version=>=2.0",
+		Text:     "of jinja2",
 	})
 }
 

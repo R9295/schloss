@@ -50,26 +50,22 @@ func extractVersionValue(version interface{}) string {
 }
 func diffPackages(oldPkg *LockfilePackage, newPkg *LockfilePackage, diffList []core.Diff) []core.Diff {
 	if oldPkg.Version != newPkg.Version {
-		diffList = append(diffList,
-			core.Diff{
-				Type:     core.MODIFIED,
-				MetaType: core.DEPENDENCY,
-				Name:     newPkg.Name,
-				Text: fmt.Sprintf("(old)version=%s & (new)version=%s",
-					oldPkg.Version,
-					newPkg.Version),
-			})
+		diffList = append(
+			diffList,
+			core.GenerateDependencyFieldDiff(
+				newPkg.Name,
+				"version",
+				oldPkg.Version,
+				newPkg.Version,
+			),
+		)
 	}
 	for oldPkgDep, oldPkgDepVersion := range oldPkg.Dependencies {
 		newPkgDepVersion, exists := newPkg.Dependencies[oldPkgDep]
 		if !exists {
 			diffList = append(diffList,
-				core.Diff{
-					Type:     core.REMOVED,
-					MetaType: core.SUB_DEPENDENCY,
-					Name:     oldPkgDep,
-					Text:     fmt.Sprintf("of %s", oldPkg.Name),
-				})
+				core.GenerateRemovedSubDependencyDiff(oldPkgDep, oldPkg.Name),
+			)
 		} else {
 			newPkgDepVersionValue := extractVersionValue(newPkgDepVersion)
 			oldPkgDepVersionValue := extractVersionValue(oldPkgDepVersion)
@@ -90,14 +86,10 @@ func diffPackages(oldPkg *LockfilePackage, newPkg *LockfilePackage, diffList []c
 	}
 	for newPkgDep, newPkgDepVersion := range newPkg.Dependencies {
 		diffList = append(diffList,
-			core.Diff{
-				Type:     core.ADDED,
-				MetaType: core.SUB_DEPENDENCY,
-				Name:     newPkgDep,
-				Text: fmt.Sprintf("of %s | version=%s",
-					newPkg.Name,
-					extractVersionValue(newPkgDepVersion)),
-			})
+			core.GenerateAddedSubDependencyDiff(newPkgDep,
+				newPkg.Name,
+				extractVersionValue(newPkgDepVersion)),
+		)
 	}
 	return diffList
 }
@@ -109,24 +101,14 @@ func DiffLockfiles(oldLockfileToml *Lockfile, newLockfileToml *Lockfile) []core.
 	for oldPkgName, oldPkgValue := range oldPkgs {
 		newPkgValue, exists := newPkgs[oldPkgName]
 		if !exists {
-			diffList = append(diffList, core.Diff{
-				Type:     core.REMOVED,
-				MetaType: core.DEPENDENCY,
-				Name:     oldPkgName,
-			})
+			diffList = append(diffList, core.GenerateRemovedDependencyDiff(oldPkgName))
 		} else {
 			diffList = diffPackages(&oldPkgValue, &newPkgValue, diffList)
 			delete(newPkgs, oldPkgName)
 		}
 	}
 	for newPkgName, newPkgValue := range newPkgs {
-		diffList = append(diffList,
-			core.Diff{
-				Type:     core.ADDED,
-				MetaType: core.DEPENDENCY,
-				Name:     newPkgName,
-				Text:     fmt.Sprintf("version=%s", newPkgValue.Version),
-			})
+		diffList = append(diffList, core.GenerateAddedDependencyDiff(newPkgName, newPkgValue.Version))
 	}
 	return diffList
 }
