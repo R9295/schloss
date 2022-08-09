@@ -74,7 +74,7 @@ func TestDiffPackagesAddPackage(t *testing.T) {
 		},
 		{
 			Name:         "tokio",
-			Version:      "22.6.0",
+			Version:      "42.0",
 			Dependencies: []string{},
 		},
 	}}
@@ -161,5 +161,57 @@ func TestDiffPackagesPackageChecksum(t *testing.T) {
 		MetaType: core.DEPENDENCY,
 		Name:     "parserkiosk",
 		Text:     "(old)checksum=Aa8325f63a7d4774dd041e363b2409ed1c5cbbd0f867795e661df066b2b0a581 & (new)checksum=7a8325f63a7d4774dd041e363b2409ed1c5cbbd0f867795e661df066b2b0a581",
+	})
+}
+
+func TestDiffPackagesSubDependencyAdd(t *testing.T) {
+	oldPkg := LockfilePackage{
+		Name:    "parserkiosk",
+		Version: "0.3.0",
+		Source: "registry+https://github.com/rust-lang/crates.io-index",
+		Checksum: "Aa8325f63a7d4774dd041e363b2409ed1c5cbbd0f867795e661df066b2b0a581",
+		Dependencies: []string{"something"},
+	}
+	newPkg := LockfilePackage{
+		Name:    "parserkiosk",
+		Version: "0.3.0",
+		Source: "registry+https://github.com/rust-lang/crates.io-index",
+		Checksum: "Aa8325f63a7d4774dd041e363b2409ed1c5cbbd0f867795e661df066b2b0a581",
+		Dependencies: []string{"something", "new"},
+	}
+	diffList := make([]core.Diff, 0)
+	diffList = diffPackages(&oldPkg, &newPkg, diffList)
+	assert.Equal(t, len(diffList), 1)
+	assert.Equal(t, diffList[0], core.Diff{
+		Type:     core.ADDED,
+		MetaType: core.SUB_DEPENDENCY,
+		Name:     "new",
+		Text:     "to parserkiosk",
+	})
+}
+
+func TestDiffPackagesSubDependencyRemove(t *testing.T) {
+	oldPkg := LockfilePackage{
+		Name:    "parserkiosk",
+		Version: "0.3.0",
+		Source: "registry+https://github.com/rust-lang/crates.io-index",
+		Checksum: "Aa8325f63a7d4774dd041e363b2409ed1c5cbbd0f867795e661df066b2b0a581",
+		Dependencies: []string{"something", "remove"},
+	}
+	newPkg := LockfilePackage{
+		Name:    "parserkiosk",
+		Version: "0.3.0",
+		Source: "registry+https://github.com/rust-lang/crates.io-index",
+		Checksum: "Aa8325f63a7d4774dd041e363b2409ed1c5cbbd0f867795e661df066b2b0a581",
+		Dependencies: []string{"something"},
+	}
+	diffList := make([]core.Diff, 0)
+	diffList = diffPackages(&oldPkg, &newPkg, diffList)
+	assert.Equal(t, len(diffList), 1)
+	assert.Equal(t, diffList[0], core.Diff{
+		Type:     core.REMOVED,
+		MetaType: core.SUB_DEPENDENCY,
+		Name:     "remove",
+		Text:     "of parserkiosk",
 	})
 }
