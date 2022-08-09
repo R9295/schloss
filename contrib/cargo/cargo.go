@@ -66,8 +66,8 @@ func DiffLockfiles(oldLockfileToml *Lockfile, newLockfileToml *Lockfile) []core.
 	diffList := make([]core.Diff, 0)
 	oldPkgs := collectPackagesAsMap(oldLockfileToml.Package)
 	newPkgs := collectPackagesAsMap(newLockfileToml.Package)
-	for oldPkgName := range oldPkgs {
-		_, exists := newPkgs[oldPkgName]
+	for oldPkgName, oldPkg := range oldPkgs {
+		newPkg, exists := newPkgs[oldPkgName]
 		if !exists {
 			diffList = append(diffList, core.Diff{
 				Type:     core.REMOVED,
@@ -75,6 +75,7 @@ func DiffLockfiles(oldLockfileToml *Lockfile, newLockfileToml *Lockfile) []core.
 				Name:     oldPkgName,
 			})
 		} else {
+			diffList = diffPackages(&oldPkg, &newPkg, diffList)
 			delete(newPkgs, oldPkgName)
 		}
 	}
