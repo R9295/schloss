@@ -44,11 +44,13 @@ func TestDiffPackagesPackageVersion(t *testing.T) {
 	diffList := make([]core.Diff, 0)
 	diffList = diffPackages(&oldPkg, &newPkg, diffList)
 	assert.Equal(t, len(diffList), 1)
-	assert.Equal(t, diffList[0], core.Diff{
+	assert.Equal(t, diffList[0], core.FieldDiff{
 		Type:     core.MODIFIED,
 		MetaType: core.DEPENDENCY,
 		Name:     "parserkiosk",
-		Text:     "(old)version=0.3.0 & (new)version=0.3.1",
+		Field:    "version",
+		OldValue: oldPkg.Version,
+		NewValue: newPkg.Version,
 	})
 }
 
@@ -74,11 +76,11 @@ func TestDiffPackagesRemovePackage(t *testing.T) {
 	}}
 	diffList := DiffLockfiles(&oldLockfile, &newLockfile)
 	assert.Equal(t, len(diffList), 1)
-	assert.Equal(t, diffList[0], core.Diff{
+	assert.Equal(t, diffList[0], core.DependencyDiff{
 		Type:     core.REMOVED,
 		MetaType: core.DEPENDENCY,
 		Name:     "black",
-		Text:     "",
+		Parent:   "",
 	})
 }
 
@@ -104,11 +106,12 @@ func TestDiffPackagesAddPackage(t *testing.T) {
 	}}
 	diffList := DiffLockfiles(&oldLockfile, &newLockfile)
 	assert.Equal(t, len(diffList), 1)
-	assert.Equal(t, diffList[0], core.Diff{
+	assert.Equal(t, diffList[0], core.DependencyDiff{
 		Type:     core.ADDED,
 		MetaType: core.DEPENDENCY,
 		Name:     "black",
-		Text:     "version=22.6.0",
+		Parent:   "",
+		Version:  "22.6.0",
 	})
 }
 
@@ -128,11 +131,11 @@ func TestDiffPackagesPackageRemoveSubDependency(t *testing.T) {
 	diffList := make([]core.Diff, 0)
 	diffList = diffPackages(&old, &new, diffList)
 	assert.Equal(t, len(diffList), 1)
-	assert.Equal(t, diffList[0], core.Diff{
+	assert.Equal(t, diffList[0], core.DependencyDiff{
 		Type:     core.REMOVED,
 		MetaType: core.SUB_DEPENDENCY,
 		Name:     "MarkupSafe",
-		Text:     "of jinja2",
+		Parent:   "jinja2",
 	})
 }
 
@@ -179,13 +182,15 @@ func TestDiffPackagesPackageAddSubDependency(t *testing.T) {
 	diffList := make([]core.Diff, 0)
 	diffList = diffPackages(&old, &new, diffList)
 	assert.Equal(t, len(diffList), 1)
-	assert.Equal(t, diffList[0], core.Diff{
+	assert.Equal(t, diffList[0], core.DependencyDiff{
 		Type:     core.ADDED,
 		MetaType: core.SUB_DEPENDENCY,
 		Name:     "MarkupSafe",
-		Text:     "of jinja2",
+		Parent:   "jinja2",
+		Version:  ">=2.0",
 	})
 }
+
 
 func TestDiffPackagesPackageModifySubDependencyWithVersionMap(t *testing.T) {
 	oldLockfileText := `[[package]]
@@ -205,7 +210,7 @@ func TestDiffPackagesPackageModifySubDependencyWithVersionMap(t *testing.T) {
 	diffList := make([]core.Diff, 0)
 	diffList = diffPackages(&oldLockfile.Package[0], &new, diffList)
 	assert.Equal(t, len(diffList), 1)
-	assert.Equal(t, diffList[0], core.Diff{
+	assert.Equal(t, diffList[0], core.FieldDiff{
 		Type:     core.MODIFIED,
 		MetaType: core.SUB_DEPENDENCY,
 		Name:     "tzdata",

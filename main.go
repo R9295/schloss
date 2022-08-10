@@ -60,7 +60,7 @@ func main() {
 				diffList = cargo.DiffLockfiles(&oldLockfileToml, &newLockfileToml)
 			}
 			for _, item := range diffList {
-				fmt.Println(fmt.Sprintf("%s %s %s %s", item.Type, item.MetaType, item.Name, item.Text))
+				fmt.Println(item.RenderHumanReadable())
 			}
 		}
 	}

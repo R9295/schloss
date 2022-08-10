@@ -71,14 +71,13 @@ func diffPackages(oldPkg *LockfilePackage, newPkg *LockfilePackage, diffList []c
 			oldPkgDepVersionValue := extractVersionValue(oldPkgDepVersion)
 			if oldPkgDepVersionValue != newPkgDepVersionValue {
 				diffList = append(diffList,
-					core.Diff{
+					core.FieldDiff{
 						Type:     core.MODIFIED,
 						MetaType: core.SUB_DEPENDENCY,
 						Name:     oldPkgDep,
-						Text: fmt.Sprintf("of %s | (old)version=%s & (new)version=%s",
-							newPkg.Name,
-							oldPkgDepVersionValue,
-							newPkgDepVersionValue),
+						Field: "version",
+						OldValue: oldPkgDepVersionValue,
+						NewValue: newPkgDepVersionValue,
 					})
 			}
 			delete(newPkg.Dependencies, oldPkgDep)
@@ -95,7 +94,7 @@ func diffPackages(oldPkg *LockfilePackage, newPkg *LockfilePackage, diffList []c
 }
 
 func DiffLockfiles(oldLockfileToml *Lockfile, newLockfileToml *Lockfile) []core.Diff {
-	diffList := make([]core.Diff, 0)
+	diffList := []core.Diff{}
 	oldPkgs := collectPackagesAsMap(oldLockfileToml)
 	newPkgs := collectPackagesAsMap(newLockfileToml)
 	for oldPkgName, oldPkgValue := range oldPkgs {

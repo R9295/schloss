@@ -75,7 +75,7 @@ func diffPackages(oldPkg *LockfilePackage, newPkg *LockfilePackage, diffList []c
 }
 
 func DiffLockfiles(oldLockfileToml *Lockfile, newLockfileToml *Lockfile) []core.Diff {
-	diffList := make([]core.Diff, 0)
+	diffList := []core.Diff{}
 	oldPkgs := collectPackagesAsMap(oldLockfileToml.Package)
 	newPkgs := collectPackagesAsMap(newLockfileToml.Package)
 	for oldPkgName, oldPkg := range oldPkgs {
