@@ -3,7 +3,6 @@ package poetry
 import (
 	"testing"
 
-	"github.com/R9295/schloss/contrib/toml"
 	"github.com/R9295/schloss/core"
 
 	"github.com/stretchr/testify/assert"
@@ -139,32 +138,6 @@ func TestDiffPackagesPackageRemoveSubDependency(t *testing.T) {
 	})
 }
 
-func TestDiffPackagesPackageModifySubDependency(t *testing.T) {
-	old := LockfilePackage{
-		Name:    "jinja2",
-		Version: "42.0",
-		Dependencies: map[string]interface{}{
-			"MarkupSafe": ">=2.0",
-		},
-	}
-	new := LockfilePackage{
-		Name:    "jinja2",
-		Version: "42.0",
-		Dependencies: map[string]interface{}{
-			"MarkupSafe": ">=3.0",
-		},
-	}
-	diffList := make([]core.Diff, 0)
-	diffList = diffPackages(&old, &new, diffList)
-	assert.Equal(t, len(diffList), 1)
-	assert.Equal(t, diffList[0], core.Diff{
-		Type:     core.MODIFIED,
-		MetaType: core.SUB_DEPENDENCY,
-		Name:     "MarkupSafe",
-		Text:     "of jinja2 | (old)version=>=2.0 & (new)version=>=3.0",
-	})
-}
-
 func TestDiffPackagesPackageAddSubDependency(t *testing.T) {
 	old := LockfilePackage{
 		Name:         "jinja2",
@@ -191,29 +164,3 @@ func TestDiffPackagesPackageAddSubDependency(t *testing.T) {
 	})
 }
 
-
-func TestDiffPackagesPackageModifySubDependencyWithVersionMap(t *testing.T) {
-	oldLockfileText := `[[package]]
-	name = "django"
-	version = "4.0.6"
-	[package.dependencies]
-	tzdata = {version = "*", markers = "sys_platform == \"win32\""}`
-	var oldLockfile Lockfile
-	toml.DecodeToml(oldLockfileText, &oldLockfile)
-	new := LockfilePackage{
-		Name:    "django",
-		Version: "4.0.6",
-		Dependencies: map[string]interface{}{
-			"tzdata": ">=2.0",
-		},
-	}
-	diffList := make([]core.Diff, 0)
-	diffList = diffPackages(&oldLockfile.Package[0], &new, diffList)
-	assert.Equal(t, len(diffList), 1)
-	assert.Equal(t, diffList[0], core.FieldDiff{
-		Type:     core.MODIFIED,
-		MetaType: core.SUB_DEPENDENCY,
-		Name:     "tzdata",
-		Text:     "of django | (old)version=* & (new)version=>=2.0",
-	})
-}
