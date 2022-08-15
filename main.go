@@ -19,6 +19,7 @@ var opts struct {
 	LockfileType    string `short:"t" long:"type" description:"Type of lockfile" required:"true"`
 	IgnoreUntracked bool   `long:"ignore-untracked" description:"Ignore Untracked Log Files"`
 	Format          string `short:"f" long:"fmt" description:"Format of output, options: json, human. Default: human"`
+	CommitAmount    uint `long:"commit-amount" description:"diff commit amount (HEAD~commitAmount). Default: 1"`
 }
 
 func run() error {
@@ -45,12 +46,18 @@ func run() error {
 			return nil
 		}
 	}
-	gitDiff, _ := diffparser.Parse(core.GetAllDiff())
+	var commitAmount uint
+	if opts.CommitAmount > 0 {
+		commitAmount = opts.CommitAmount
+	} else {
+		commitAmount = 1
+	}
+	gitDiff, _ := diffparser.Parse(core.GetAllDiff(commitAmount))
 	lockfileRegex := regexp.MustCompile(lockfileType.FileName)
 	for _, file := range gitDiff.Files {
 		if lockfileRegex.MatchString(file.NewName) && file.Mode == diffparser.MODIFIED {
 			fmt.Printf("Lockfile %s modified\n", file.NewName)
-			lockfileDiff, _ := diffparser.Parse(core.GetSingleDiff(file.NewName))
+			lockfileDiff, _ := diffparser.Parse(core.GetSingleDiff(file.NewName, commitAmount))
 			newLockfile := ""
 			oldLockfile := ""
 			file = lockfileDiff.Files[0]
