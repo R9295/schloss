@@ -1,21 +1,20 @@
 package toml
 
 import (
-	"log"
-
 	"github.com/BurntSushi/toml"
 )
 
-func DecodeToml[T any](text string, lockfileStruct T) {
+func DecodeToml[T any](text string, lockfileStruct T) error {
 	_, err := toml.Decode(text, lockfileStruct)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
+	return nil
 }
-func ParseLockfiles[T any](oldLockfile string, newLockfile string) (T, T) {
-	var newLockfileToml T
-	var oldLockfileToml T
-	DecodeToml(newLockfile, &newLockfileToml)
-	DecodeToml(oldLockfile, &oldLockfileToml)
-	return oldLockfileToml, newLockfileToml
+func ParseLockfile[T any](lockfile string) (T, error) {
+	var parsedLockfile T
+	if err := DecodeToml(lockfile, &parsedLockfile); err != nil {
+		return parsedLockfile, err
+	}
+	return parsedLockfile, nil
 }

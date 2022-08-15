@@ -56,10 +56,24 @@ func run() error {
 			core.GetLockfileFromDiff(&newLockfile, &oldLockfile, file)
 			var diffList []core.Diff
 			if opts.LockfileType == "poetry" {
-				oldLockfileToml, newLockfileToml := toml.ParseLockfiles[poetry.Lockfile](oldLockfile, newLockfile)
+				oldLockfileToml, err := toml.ParseLockfile[poetry.Lockfile](oldLockfile)
+				if err != nil {
+					return err
+				}
+				newLockfileToml, err := toml.ParseLockfile[poetry.Lockfile](newLockfile)
+				if err != nil {
+					return err
+				}
 				diffList = poetry.DiffLockfiles(&oldLockfileToml, &newLockfileToml)
 			} else {
-				oldLockfileToml, newLockfileToml := toml.ParseLockfiles[cargo.Lockfile](oldLockfile, newLockfile)
+				oldLockfileToml, err := toml.ParseLockfile[cargo.Lockfile](oldLockfile)
+				if err != nil {
+					return err
+				}
+				newLockfileToml, err := toml.ParseLockfile[cargo.Lockfile](newLockfile)
+				if err != nil {
+					return err
+				}
 				diffList = cargo.DiffLockfiles(&oldLockfileToml, &newLockfileToml)
 			}
 			for _, item := range diffList {
