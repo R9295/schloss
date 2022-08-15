@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"regexp"
 	"time"
 
@@ -20,10 +19,10 @@ var opts struct {
 	IgnoreUntracked bool   `long:"ignore-untracked" description:"Ignore Untracked Log Files"`
 }
 
-func main() {
+func run() error {
 	_, err := flags.Parse(&opts)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	fmt.Println("----------------------------------------------------------------------")
 	fmt.Printf("Running schloss for %s type: %s\n", opts.LockfilePath, opts.LockfileType)
@@ -38,7 +37,7 @@ func main() {
 				fmt.Println(file)
 			}
 			fmt.Println("If you think this is a bug, you can silence it with --ignore-untracked and file a bug report")
-			return
+			return nil
 		}
 	}
 	gitDiff, _ := diffparser.Parse(core.GetAllDiff())
@@ -67,4 +66,11 @@ func main() {
 	fmt.Println("----------------------------------------------------------------------")
 	fmt.Println(fmt.Sprintf("Time elapsed: %s", time.Since(start)))
 	fmt.Println("----------------------------------------------------------------------")
+	return nil
+}
+
+func main() {
+	if err := run(); err != nil {
+		panic(err)
+	}
 }
