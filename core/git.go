@@ -26,7 +26,8 @@ func GetAllDiff() string {
 
 func GetSingleDiff(filePath string) string {
 	fmt.Println(filePath)
-	diff, err := exec.Command("git", "diff", "HEAD", "-U99999", filePath).Output()
+	// your diff line length better not be bigger than that number! TODO: handle if not
+	diff, err := exec.Command("git", "diff", "HEAD", "-U99999999999999999", filePath).Output()
 	if err != nil {
 		panic(err)
 	}
