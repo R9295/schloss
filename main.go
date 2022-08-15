@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"regexp"
@@ -17,6 +18,7 @@ import (
 var opts struct {
 	LockfileType    string `short:"t" long:"type" description:"Type of lockfile" required:"true"`
 	IgnoreUntracked bool   `long:"ignore-untracked" description:"Ignore Untracked Log Files"`
+	Format          string `short:"f" long:"fmt" description:"Format of output, options: json, human. Default: human"`
 }
 
 func run() error {
@@ -75,8 +77,16 @@ func run() error {
 				}
 				diffList = cargo.DiffLockfiles(&oldLockfileToml, &newLockfileToml)
 			}
-			for _, item := range diffList {
-				fmt.Println(item.RenderHumanReadable())
+			if opts.Format == "json" {
+				jsonDiff, err := json.Marshal(diffList)
+				if err != nil {
+					return err
+				}
+				fmt.Println(string(jsonDiff))
+			} else {
+				for _, item := range diffList {
+					fmt.Println(item.RenderHumanReadable())
+				}
 			}
 		}
 	}

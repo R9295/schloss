@@ -22,11 +22,11 @@ type Diff interface {
 }
 
 type DependencyDiff struct {
-	Type     DiffType
-	MetaType DiffMetaType
-	Name     string
-	Parent   string
-	Version  string
+	Type     DiffType `json:"type"`
+	MetaType DiffMetaType `json:"meta_type"`
+	Name     string `json:"dependency_name"`
+	Parent   string `json:"parent"`
+	Version  string `json:"version,omitempty"`
 }
 
 func (diff DependencyDiff) RenderHumanReadable() string {
@@ -40,12 +40,12 @@ func (diff DependencyDiff) RenderHumanReadable() string {
 }
 
 type FieldDiff struct {
-	Type     DiffType
-	MetaType DiffMetaType
-	Field    string
-	Name     string
-	OldValue string
-	NewValue string
+	Type     DiffType `json:"type"`
+	MetaType DiffMetaType `json:"meta_type"`
+	Name     string `json:"dependency_name"`
+	Field    string `json:"field"`
+	OldValue string `json:"old_value"`
+	NewValue string `json:"new_value"`
 }
 
 func (diff FieldDiff) RenderHumanReadable() string {
