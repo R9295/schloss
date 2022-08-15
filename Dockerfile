@@ -6,9 +6,10 @@ COPY . .
 
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" .
 
-FROM scratch
+FROM alpine:latest
 
 WORKDIR /app
+RUN apk add git --no-cache
 
 COPY --from=builder /app/schloss /usr/bin/
 
