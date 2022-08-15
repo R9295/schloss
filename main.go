@@ -16,7 +16,6 @@ import (
 
 var opts struct {
 	LockfileType    string `short:"t" long:"type" description:"Type of lockfile" required:"true"`
-	LockfilePath    string `short:"p" long:"path" description:"Path to lockfile" required:"true"`
 	IgnoreUntracked bool   `long:"ignore-untracked" description:"Ignore Untracked Log Files"`
 }
 
@@ -30,7 +29,7 @@ func run() error {
 		return err
 	}
 	fmt.Println("----------------------------------------------------------------------")
-	fmt.Printf("Running schloss for %s type: %s\n", opts.LockfilePath, opts.LockfileType)
+	fmt.Printf("Running schloss for type: %s\n", opts.LockfileType)
 	fmt.Println("----------------------------------------------------------------------")
 	start := time.Now()
 	if !opts.IgnoreUntracked {
