@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"regexp"
 	"time"
 
@@ -24,13 +25,16 @@ func run() error {
 	if err != nil {
 		return err
 	}
+	lockfileType, err := core.GetLockfileType(opts.LockfileType)
+	if err != nil {
+		return err
+	}
 	fmt.Println("----------------------------------------------------------------------")
 	fmt.Printf("Running schloss for %s type: %s\n", opts.LockfilePath, opts.LockfileType)
 	fmt.Println("----------------------------------------------------------------------")
 	start := time.Now()
-	lockfileStruct := core.GetLockfileType(opts.LockfileType)
 	if !opts.IgnoreUntracked {
-		untrackedLockfiles, amount := core.CheckUntrackedFiles(lockfileStruct.FileName)
+		untrackedLockfiles, amount := core.CheckUntrackedFiles(lockfileType.FileName)
 		if amount > 0 {
 			fmt.Println("Error: You have untracked lockfiles. Please add them to source control.")
 			for _, file := range untrackedLockfiles {
@@ -41,7 +45,7 @@ func run() error {
 		}
 	}
 	gitDiff, _ := diffparser.Parse(core.GetAllDiff())
-	lockfileRegex := regexp.MustCompile(lockfileStruct.FileName)
+	lockfileRegex := regexp.MustCompile(lockfileType.FileName)
 	for _, file := range gitDiff.Files {
 		if lockfileRegex.MatchString(file.NewName) && file.Mode == diffparser.MODIFIED {
 			fmt.Printf("Lockfile %s modified\n", file.NewName)
@@ -71,6 +75,6 @@ func run() error {
 
 func main() {
 	if err := run(); err != nil {
-		panic(err)
+		log.Fatalf("Error: %s", err)
 	}
 }
