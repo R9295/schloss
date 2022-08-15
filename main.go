@@ -58,7 +58,6 @@ func run() error {
 		if lockfileRegex.MatchString(file.NewName) && file.Mode == diffparser.MODIFIED {
 			fmt.Printf("Lockfile %s modified\n", file.NewName)
 			lockfileDiff, _ := diffparser.Parse(core.GetSingleDiff(file.NewName, commitAmount))
-			fmt.Println(lockfileDiff)
 			newLockfile := ""
 			oldLockfile := ""
 			file = lockfileDiff.Files[0]
