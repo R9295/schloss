@@ -26,6 +26,7 @@ func GetAllDiff(commitAmount uint) string {
 
 func GetSingleDiff(filePath string, commitAmount uint) string {
 	fmt.Println(filePath)
+
 	// your diff line length better not be bigger than that number! TODO: handle if not
 	diff, err := exec.Command("git", "diff", fmt.Sprintf("HEAD~%d", commitAmount), "-U99999999999999999", filePath).Output()
 	if err != nil {
