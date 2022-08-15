@@ -6,15 +6,15 @@ type DiffType string
 
 const (
 	ADDED    DiffType = "added"
-	MODIFIED          = "modified"
-	REMOVED           = "removed"
+	MODIFIED DiffType = "modified"
+	REMOVED  DiffType = "removed"
 )
 
 type DiffMetaType string
 
 const (
 	DEPENDENCY     DiffMetaType = "dependency"
-	SUB_DEPENDENCY              = "sub-dependency"
+	SUB_DEPENDENCY DiffMetaType = "sub-dependency"
 )
 
 type Diff interface {
