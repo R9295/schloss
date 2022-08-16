@@ -19,7 +19,7 @@ var opts struct {
 	LockfileType    string `short:"t" long:"type" description:"Type of lockfile" required:"true"`
 	IgnoreUntracked bool   `long:"ignore-untracked" description:"Ignore Untracked Log Files"`
 	Format          string `short:"f" long:"fmt" description:"Format of output, options: json, human. Default: human"`
-	CommitAmount    uint `long:"commit-amount" description:"diff commit amount (HEAD~commitAmount). Default: 1"`
+	CommitAmount    uint   `long:"commit-amount" description:"diff commit amount (HEAD~commitAmount). Default: 1"`
 }
 
 func run() error {
@@ -81,15 +81,9 @@ func run() error {
 			core.GetLockfileFromDiff(&newLockfile, &oldLockfile, file)
 			var diffList []core.Diff
 			if opts.LockfileType == "poetry" {
-				oldLockfileToml, err := toml.ParseLockfile[poetry.Lockfile](oldLockfile)
-				if err != nil {
+				if err := poetry.Diff(&oldLockfile, &newLockfile, &diffList); err != nil {
 					return err
 				}
-				newLockfileToml, err := toml.ParseLockfile[poetry.Lockfile](newLockfile)
-				if err != nil {
-					return err
-				}
-				diffList = poetry.DiffLockfiles(&oldLockfileToml, &newLockfileToml)
 			} else {
 				oldLockfileToml, err := toml.ParseLockfile[cargo.Lockfile](oldLockfile)
 				if err != nil {

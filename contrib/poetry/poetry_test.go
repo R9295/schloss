@@ -41,7 +41,7 @@ func TestDiffPackagesPackageVersion(t *testing.T) {
 		Version: "0.3.1",
 	}
 	diffList := make([]core.Diff, 0)
-	diffList = diffPackages(&oldPkg, &newPkg, diffList)
+	diffPackages(&oldPkg, &newPkg, &diffList)
 	assert.Equal(t, len(diffList), 1)
 	assert.Equal(t, diffList[0], core.FieldDiff{
 		Type:     core.MODIFIED,
@@ -73,7 +73,8 @@ func TestDiffPackagesRemovePackage(t *testing.T) {
 			Dependencies: map[string]interface{}{},
 		},
 	}}
-	diffList := DiffLockfiles(&oldLockfile, &newLockfile)
+	var diffList []core.Diff
+	DiffLockfiles(&oldLockfile, &newLockfile, &diffList)
 	assert.Equal(t, len(diffList), 1)
 	assert.Equal(t, diffList[0], core.DependencyDiff{
 		Type:     core.REMOVED,
@@ -103,7 +104,8 @@ func TestDiffPackagesAddPackage(t *testing.T) {
 			Dependencies: map[string]interface{}{},
 		},
 	}}
-	diffList := DiffLockfiles(&oldLockfile, &newLockfile)
+	var diffList []core.Diff
+	DiffLockfiles(&oldLockfile, &newLockfile, &diffList)
 	assert.Equal(t, len(diffList), 1)
 	assert.Equal(t, diffList[0], core.DependencyDiff{
 		Type:     core.ADDED,
@@ -128,7 +130,7 @@ func TestDiffPackagesPackageRemoveSubDependency(t *testing.T) {
 		Dependencies: map[string]interface{}{},
 	}
 	diffList := make([]core.Diff, 0)
-	diffList = diffPackages(&old, &new, diffList)
+	diffPackages(&old, &new, &diffList)
 	assert.Equal(t, len(diffList), 1)
 	assert.Equal(t, diffList[0], core.DependencyDiff{
 		Type:     core.REMOVED,
@@ -153,7 +155,7 @@ func TestDiffPackagesPackageAddSubDependency(t *testing.T) {
 		},
 	}
 	diffList := make([]core.Diff, 0)
-	diffList = diffPackages(&old, &new, diffList)
+	diffPackages(&old, &new, &diffList)
 	assert.Equal(t, len(diffList), 1)
 	assert.Equal(t, diffList[0], core.DependencyDiff{
 		Type:     core.ADDED,
@@ -163,4 +165,3 @@ func TestDiffPackagesPackageAddSubDependency(t *testing.T) {
 		Version:  ">=2.0",
 	})
 }
-
