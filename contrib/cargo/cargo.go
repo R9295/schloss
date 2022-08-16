@@ -1,6 +1,7 @@
 package cargo
 
 import (
+	"github.com/R9295/schloss/contrib/toml"
 	"github.com/R9295/schloss/core"
 )
 
@@ -32,9 +33,9 @@ func doesSubdependencyExist(dependencyList []string, check string) bool {
 	return false
 }
 
-func diffPackages(oldPkg *LockfilePackage, newPkg *LockfilePackage, diffList []core.Diff) []core.Diff {
+func diffPackages(oldPkg *LockfilePackage, newPkg *LockfilePackage, diffList *[]core.Diff) {
 	if oldPkg.Version != newPkg.Version {
-		diffList = append(diffList,
+		*diffList = append(*diffList,
 			core.GenerateDependencyFieldDiff(newPkg.Name,
 				"version",
 				oldPkg.Version,
@@ -42,7 +43,7 @@ func diffPackages(oldPkg *LockfilePackage, newPkg *LockfilePackage, diffList []c
 		)
 	}
 	if oldPkg.Checksum != newPkg.Checksum {
-		diffList = append(diffList,
+		*diffList = append(*diffList,
 			core.GenerateDependencyFieldDiff(newPkg.Name,
 				"checksum",
 				oldPkg.Checksum,
@@ -50,7 +51,7 @@ func diffPackages(oldPkg *LockfilePackage, newPkg *LockfilePackage, diffList []c
 		)
 	}
 	if oldPkg.Source != newPkg.Source {
-		diffList = append(diffList,
+		*diffList = append(*diffList,
 			core.GenerateDependencyFieldDiff(newPkg.Name,
 				"source",
 				oldPkg.Source,
@@ -59,36 +60,46 @@ func diffPackages(oldPkg *LockfilePackage, newPkg *LockfilePackage, diffList []c
 	}
 	for _, dependency := range oldPkg.Dependencies {
 		if doesSubdependencyExist(newPkg.Dependencies, dependency) == false {
-			diffList = append(diffList,
+			*diffList = append(*diffList,
 				core.GenerateRemovedSubDependencyDiff(dependency, oldPkg.Name),
 			)
 		}
 	}
 	for _, dependency := range newPkg.Dependencies {
 		if doesSubdependencyExist(oldPkg.Dependencies, dependency) == false {
-			diffList = append(diffList,
+			*diffList = append(*diffList,
 				core.GenerateAddedSubDependencyDiff(dependency, newPkg.Name, ""),
 			)
 		}
 	}
-	return diffList
 }
 
-func DiffLockfiles(oldLockfileToml *Lockfile, newLockfileToml *Lockfile) []core.Diff {
-	diffList := []core.Diff{}
+func DiffLockfiles(oldLockfileToml *Lockfile, newLockfileToml *Lockfile, diffList *[]core.Diff) {
 	oldPkgs := collectPackagesAsMap(oldLockfileToml.Package)
 	newPkgs := collectPackagesAsMap(newLockfileToml.Package)
 	for oldPkgName, oldPkg := range oldPkgs {
 		newPkg, exists := newPkgs[oldPkgName]
 		if !exists {
-			diffList = append(diffList, core.GenerateRemovedDependencyDiff(oldPkgName))
+			*diffList = append(*diffList, core.GenerateRemovedDependencyDiff(oldPkgName))
 		} else {
-			diffList = diffPackages(&oldPkg, &newPkg, diffList)
+			diffPackages(&oldPkg, &newPkg, diffList)
 			delete(newPkgs, oldPkgName)
 		}
 	}
 	for newPkgName, newPkgValue := range newPkgs {
-		diffList = append(diffList, core.GenerateAddedDependencyDiff(newPkgName, newPkgValue.Version))
+		*diffList = append(*diffList, core.GenerateAddedDependencyDiff(newPkgName, newPkgValue.Version))
 	}
-	return diffList
+}
+
+func Diff(oldLockfile *string, newLockfile *string, diffList *[]core.Diff) error {
+	oldLockfileToml, err := toml.ParseLockfile[Lockfile](*oldLockfile)
+	if err != nil {
+		return err
+	}
+	newLockfileToml, err := toml.ParseLockfile[Lockfile](*newLockfile)
+	if err != nil {
+		return err
+	}
+	DiffLockfiles(&oldLockfileToml, &newLockfileToml, diffList)
+	return nil
 }

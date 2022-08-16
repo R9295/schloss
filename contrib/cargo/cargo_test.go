@@ -48,7 +48,8 @@ func TestDiffPackagesRemovePackage(t *testing.T) {
 			Dependencies: []string{},
 		},
 	}}
-	diffList := DiffLockfiles(&oldLockfile, &newLockfile)
+	var diffList []core.Diff
+	DiffLockfiles(&oldLockfile, &newLockfile, &diffList)
 	assert.Equal(t, len(diffList), 1)
 	assert.Equal(t, diffList[0], core.DependencyDiff{
 		Type:     core.REMOVED,
@@ -78,7 +79,8 @@ func TestDiffPackagesAddPackage(t *testing.T) {
 			Dependencies: []string{},
 		},
 	}}
-	diffList := DiffLockfiles(&oldLockfile, &newLockfile)
+	var diffList []core.Diff
+	DiffLockfiles(&oldLockfile, &newLockfile, &diffList)
 	assert.Equal(t, len(diffList), 1)
 	assert.Equal(t, diffList[0], core.DependencyDiff{
 		Type:     core.ADDED,
@@ -103,8 +105,8 @@ func TestDiffPackagesPackageVersion(t *testing.T) {
 		Source:   "registry+https://github.com/rust-lang/crates.io-index",
 		Checksum: "7a8325f63a7d4774dd041e363b2409ed1c5cbbd0f867795e661df066b2b0a581",
 	}
-	diffList := make([]core.Diff, 0)
-	diffList = diffPackages(&oldPkg, &newPkg, diffList)
+	var diffList []core.Diff
+	diffPackages(&oldPkg, &newPkg, &diffList)
 	assert.Equal(t, len(diffList), 1)
 	assert.Equal(t, diffList[0], core.FieldDiff{
 		Type:     core.MODIFIED,
@@ -130,8 +132,8 @@ func TestDiffPackagesPackageSouce(t *testing.T) {
 		Source:   "registry+https://githubb.com/rust-lang/crates.io-index",
 		Checksum: "7a8325f63a7d4774dd041e363b2409ed1c5cbbd0f867795e661df066b2b0a581",
 	}
-	diffList := make([]core.Diff, 0)
-	diffList = diffPackages(&oldPkg, &newPkg, diffList)
+	var diffList []core.Diff
+	diffPackages(&oldPkg, &newPkg, &diffList)
 	assert.Equal(t, len(diffList), 1)
 	assert.Equal(t, diffList[0], core.FieldDiff{
 		Type:     core.MODIFIED,
@@ -157,8 +159,8 @@ func TestDiffPackagesPackageChecksum(t *testing.T) {
 		Source:   "registry+https://github.com/rust-lang/crates.io-index",
 		Checksum: "7a8325f63a7d4774dd041e363b2409ed1c5cbbd0f867795e661df066b2b0a581",
 	}
-	diffList := make([]core.Diff, 0)
-	diffList = diffPackages(&oldPkg, &newPkg, diffList)
+	var diffList []core.Diff
+	diffPackages(&oldPkg, &newPkg, &diffList)
 	assert.Equal(t, len(diffList), 1)
 	assert.Equal(t, diffList[0], core.FieldDiff{
 		Type:     core.MODIFIED,
@@ -185,8 +187,8 @@ func TestDiffPackagesSubDependencyAdd(t *testing.T) {
 		Checksum:     "Aa8325f63a7d4774dd041e363b2409ed1c5cbbd0f867795e661df066b2b0a581",
 		Dependencies: []string{"something", "new"},
 	}
-	diffList := make([]core.Diff, 0)
-	diffList = diffPackages(&oldPkg, &newPkg, diffList)
+	var diffList []core.Diff
+	diffPackages(&oldPkg, &newPkg, &diffList)
 	assert.Equal(t, len(diffList), 1)
 	assert.Equal(t, diffList[0], core.DependencyDiff{
 		Type:     core.ADDED,
@@ -212,8 +214,8 @@ func TestDiffPackagesSubDependencyRemove(t *testing.T) {
 		Checksum:     "Aa8325f63a7d4774dd041e363b2409ed1c5cbbd0f867795e661df066b2b0a581",
 		Dependencies: []string{"something"},
 	}
-	diffList := make([]core.Diff, 0)
-	diffList = diffPackages(&oldPkg, &newPkg, diffList)
+	var diffList []core.Diff
+	diffPackages(&oldPkg, &newPkg, &diffList)
 	assert.Equal(t, len(diffList), 1)
 	assert.Equal(t, diffList[0], core.DependencyDiff{
 		Type:     core.REMOVED,

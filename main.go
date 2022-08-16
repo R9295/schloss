@@ -9,7 +9,6 @@ import (
 
 	"github.com/R9295/schloss/contrib/cargo"
 	"github.com/R9295/schloss/contrib/poetry"
-	"github.com/R9295/schloss/contrib/toml"
 	"github.com/R9295/schloss/core"
 	"github.com/jessevdk/go-flags"
 	"github.com/waigani/diffparser"
@@ -85,15 +84,9 @@ func run() error {
 					return err
 				}
 			} else {
-				oldLockfileToml, err := toml.ParseLockfile[cargo.Lockfile](oldLockfile)
-				if err != nil {
+				if err := cargo.Diff(&oldLockfile, &newLockfile, &diffList); err != nil {
 					return err
 				}
-				newLockfileToml, err := toml.ParseLockfile[cargo.Lockfile](newLockfile)
-				if err != nil {
-					return err
-				}
-				diffList = cargo.DiffLockfiles(&oldLockfileToml, &newLockfileToml)
 			}
 			if opts.Format == "json" {
 				jsonDiff, err := json.Marshal(diffList)
