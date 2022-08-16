@@ -36,7 +36,10 @@ func run() error {
 	fmt.Println("----------------------------------------------------------------------")
 	start := time.Now()
 	if !opts.IgnoreUntracked {
-		untrackedLockfiles, amount := core.CheckUntrackedFiles(lockfileType.FileName)
+		untrackedLockfiles, amount, err := core.CheckUntrackedFiles(lockfileType.FileName)
+		if err != nil {
+			return err
+		}
 		if amount > 0 {
 			fmt.Println("Error: You have untracked lockfiles. Please add them to source control.")
 			for _, file := range untrackedLockfiles {
@@ -52,15 +55,29 @@ func run() error {
 	} else {
 		commitAmount = 1
 	}
-	gitDiff, _ := diffparser.Parse(core.GetAllDiff(commitAmount))
+	gitDiff, err := core.GetAllDiff(commitAmount)
+	if err != nil {
+		return err
+	}
+	parsedDiff, err := diffparser.Parse(gitDiff)
+	if err != nil {
+		return err
+	}
 	lockfileRegex := regexp.MustCompile(lockfileType.FileName)
-	for _, file := range gitDiff.Files {
+	for _, file := range parsedDiff.Files {
 		if lockfileRegex.MatchString(file.NewName) && file.Mode == diffparser.MODIFIED {
 			fmt.Printf("Lockfile %s modified\n", file.NewName)
-			lockfileDiff, _ := diffparser.Parse(core.GetSingleDiff(file.NewName, commitAmount))
+			lockfileDiff, err := core.GetSingleDiff(file.NewName, commitAmount)
+			if err != nil {
+				return err
+			}
+			parsedLockfileDiff, err := diffparser.Parse(lockfileDiff)
+			if err != nil {
+				return err
+			}
 			newLockfile := ""
 			oldLockfile := ""
-			file = lockfileDiff.Files[0]
+			file = parsedLockfileDiff.Files[0]
 			core.GetLockfileFromDiff(&newLockfile, &oldLockfile, file)
 			var diffList []core.Diff
 			if opts.LockfileType == "poetry" {
