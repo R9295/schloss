@@ -74,10 +74,8 @@ func run() error {
 			if err != nil {
 				return err
 			}
-			newLockfile := ""
-			oldLockfile := ""
-			file = parsedLockfileDiff.Files[0]
-			core.GetLockfileFromDiff(&newLockfile, &oldLockfile, file)
+			diffedFile := parsedLockfileDiff.Files[0]
+			newLockfile, oldLockfile := core.GetLockfilesFromDiff(diffedFile)
 			var diffList []core.Diff
 			if opts.LockfileType == "poetry" {
 				if err := poetry.Diff(&oldLockfile, &newLockfile, &diffList); err != nil {
