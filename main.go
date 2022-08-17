@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"regexp"
@@ -87,15 +86,11 @@ func run() error {
 				}
 			}
 			if opts.Format == "json" {
-				jsonDiff, err := json.Marshal(diffList)
-				if err != nil {
+				if err := core.RenderJSON(&diffList); err != nil {
 					return err
 				}
-				fmt.Println(string(jsonDiff))
 			} else {
-				for _, item := range diffList {
-					fmt.Println(item.RenderHumanReadable())
-				}
+				core.RenderHumanReadable(&diffList)
 			}
 		}
 	}
