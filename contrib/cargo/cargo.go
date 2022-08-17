@@ -41,7 +41,7 @@ func diffSubPackages(oldSubPackages ParsedSubPackages, newSubPackages ParsedSubP
 	for pkgName, oldValue := range oldSubPackages {
 		newValue, exists := newSubPackages[pkgName]
 		if exists {
-			diff[pkgName] = []string{}
+			diff[pkgName] = make([]string, 0)
 			for _, oldDep := range oldValue {
 				if index := core.IndexOf(newValue, oldDep); index != -1 {
 					diff[pkgName] = append(diff[pkgName], oldDep)
