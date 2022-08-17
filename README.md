@@ -4,7 +4,7 @@ Detect potential lockfile tampering as your dependencies grow.
 
 Supported lockfiles:
 - [x] Poetry (Python)
-- [x] Cargo  (Rust)
+- [x] [Cargo](/contrib/cargo)  (Rust)
 - [ ] Pipenv (Python)
 - [ ] Yarn   (Node.js)
 - [ ] NPM    (Node.js)
