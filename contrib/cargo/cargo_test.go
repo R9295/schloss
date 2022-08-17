@@ -1,6 +1,7 @@
 package cargo
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/R9295/schloss/core"
@@ -23,7 +24,7 @@ func TestPoetryCollectPackage(t *testing.T) {
 			Dependencies: []string{"tokio"},
 		},
 	}
-	collectedPkgs := collectPackagesAsMap(pkgs)
+	collectedPkgs, _ := collectPackages(pkgs)
 	assert.Equal(t, pkgs[0], collectedPkgs["parserkiosk"])
 	assert.Equal(t, pkgs[1], collectedPkgs["deno_core"])
 }
@@ -223,4 +224,101 @@ func TestDiffPackagesSubDependencyRemove(t *testing.T) {
 		Name:     "remove",
 		Parent:   "parserkiosk",
 	})
+}
+
+func TestNoDuplicateModifiedSubDependencyWhenAdding(t *testing.T) {
+	/*
+		When adding a new pkg which has a shared, existing sub-dependency with an existing pkg
+		if the sub-dependency is modified(eg. version bump), make sure the modification diff
+		is only for the existing pkg and not for the added.
+	*/
+	oldLockfile := Lockfile{Package: []LockfilePackage{
+		{
+			Name:         "sub_dep",
+			Version:      "0.1",
+			Dependencies: []string{},
+		},
+		{
+			Name:         "tokio",
+			Version:      "42.0",
+			Dependencies: []string{"sub_dep"},
+		},
+	}}
+	newLockfile := Lockfile{Package: []LockfilePackage{
+		{
+			Name:         "sub_dep",
+			Version:      "0.2",
+			Dependencies: []string{},
+		},
+		{
+			Name:         "tokio",
+			Version:      "42.0",
+			Dependencies: []string{"sub_dep"},
+		},
+		{
+			Name:         "deno_core",
+			Version:      "42.0",
+			Dependencies: []string{"sub_dep"},
+		},
+	},
+	}
+	var diffList []core.Diff
+	DiffLockfiles(&oldLockfile, &newLockfile, &diffList)
+	assert.Equal(t, len(diffList), 3)
+	assert.Equal(
+		t, []core.Diff{
+			core.GenerateDependencyFieldDiff("sub_dep", "version", "0.1", "0.2"),
+			core.GenerateAddedDependencyDiff("deno_core", "42.0"),
+			core.GenerateModifiedSubDependencyDiff("sub_dep", "tokio"),
+		},
+		diffList)
+}
+
+func TestNoDuplicateModifiedSubDependencyWhenRemoving(t *testing.T) {
+	/*
+		When adding a new pkg which has a shared, existing sub-dependency with a removed pkg
+		if the sub-dependency is modified(eg. version bump), make sure the modification diff
+		is only for the existing pkg and not for the removed.
+	*/
+	oldLockfile := Lockfile{Package: []LockfilePackage{
+		{
+			Name:         "sub_dep",
+			Version:      "0.2",
+			Dependencies: []string{},
+		},
+		{
+			Name:         "tokio",
+			Version:      "42.0",
+			Dependencies: []string{"sub_dep"},
+		},
+		{
+			Name:         "deno_core",
+			Version:      "42.0",
+			Dependencies: []string{"sub_dep"},
+		},
+	},
+	}
+	newLockfile := Lockfile{Package: []LockfilePackage{
+		{
+			Name:         "sub_dep",
+			Version:      "0.1",
+			Dependencies: []string{},
+		},
+		{
+			Name:         "tokio",
+			Version:      "42.0",
+			Dependencies: []string{"sub_dep"},
+		},
+	}}
+	var diffList []core.Diff
+	DiffLockfiles(&oldLockfile, &newLockfile, &diffList)
+	fmt.Println(diffList)
+	assert.Equal(t, len(diffList), 3)
+	assert.Equal(
+		t, []core.Diff{
+			core.GenerateDependencyFieldDiff("sub_dep", "version", "0.2", "0.1"),
+			core.GenerateRemovedDependencyDiff("deno_core"),
+			core.GenerateModifiedSubDependencyDiff("sub_dep", "tokio"),
+		},
+		diffList)
 }

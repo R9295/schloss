@@ -17,12 +17,39 @@ type Lockfile struct {
 	Package []LockfilePackage
 }
 
-func collectPackagesAsMap(lockFilePkgs []LockfilePackage) map[string]LockfilePackage {
+type ParsedSubPackages map[string][]string
+
+func collectPackages(lockFilePkgs []LockfilePackage) (map[string]LockfilePackage, map[string][]string) {
 	packages := make(map[string]LockfilePackage)
+	subPackages := make(map[string][]string)
 	for _, pkg := range lockFilePkgs {
 		packages[pkg.Name] = pkg
+		for _, subPkg := range pkg.Dependencies {
+			_, exists := subPackages[subPkg]
+			if !exists {
+				subPackages[subPkg] = []string{pkg.Name}
+			} else {
+				subPackages[subPkg] = append(subPackages[subPkg], pkg.Name)
+			}
+		}
 	}
-	return packages
+	return packages, subPackages
+}
+
+func diffSubPackages(oldSubPackages ParsedSubPackages, newSubPackages ParsedSubPackages) ParsedSubPackages {
+	diff := make(ParsedSubPackages)
+	for pkgName, oldValue := range oldSubPackages {
+		newValue, exists := newSubPackages[pkgName]
+		if exists {
+			diff[pkgName] = []string{}
+			for _, oldDep := range oldValue {
+				if index := core.IndexOf(newValue, oldDep); index != -1 {
+					diff[pkgName] = append(diff[pkgName], oldDep)
+				}
+			}
+		}
+	}
+	return diff
 }
 func doesSubdependencyExist(dependencyList []string, check string) bool {
 	for _, dependency := range dependencyList {
@@ -75,8 +102,9 @@ func diffPackages(oldPkg *LockfilePackage, newPkg *LockfilePackage, diffList *[]
 }
 
 func DiffLockfiles(oldLockfileToml *Lockfile, newLockfileToml *Lockfile, diffList *[]core.Diff) {
-	oldPkgs := collectPackagesAsMap(oldLockfileToml.Package)
-	newPkgs := collectPackagesAsMap(newLockfileToml.Package)
+	oldPkgs, oldSubPackages := collectPackages(oldLockfileToml.Package)
+	newPkgs, newSubPackages := collectPackages(newLockfileToml.Package)
+	diffedSubPackages := diffSubPackages(oldSubPackages, newSubPackages)
 	for oldPkgName, oldPkg := range oldPkgs {
 		newPkg, exists := newPkgs[oldPkgName]
 		if !exists {
@@ -89,6 +117,20 @@ func DiffLockfiles(oldLockfileToml *Lockfile, newLockfileToml *Lockfile, diffLis
 	for newPkgName, newPkgValue := range newPkgs {
 		*diffList = append(*diffList, core.GenerateAddedDependencyDiff(newPkgName, newPkgValue.Version))
 	}
+	var subPkgDiff []core.Diff
+
+	for _, diff := range *diffList {
+		if diff.GetType() == core.MODIFIED {
+			depName := diff.GetName()
+			parents, exists := diffedSubPackages[depName]
+			if exists {
+				for _, parent := range parents {
+					subPkgDiff = append(subPkgDiff, core.GenerateModifiedSubDependencyDiff(depName, parent))
+				}
+			}
+		}
+	}
+	*diffList = append(*diffList, subPkgDiff...)
 }
 
 func Diff(oldLockfile *string, newLockfile *string, diffList *[]core.Diff) error {
