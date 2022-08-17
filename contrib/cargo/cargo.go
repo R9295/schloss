@@ -19,9 +19,9 @@ type Lockfile struct {
 
 type ParsedSubPackages map[string][]string
 
-func collectPackages(lockFilePkgs []LockfilePackage) (map[string]LockfilePackage, map[string][]string) {
+func collectPackages(lockFilePkgs []LockfilePackage) (map[string]LockfilePackage, ParsedSubPackages) {
 	packages := make(map[string]LockfilePackage)
-	subPackages := make(map[string][]string)
+	subPackages := make(ParsedSubPackages)
 	for _, pkg := range lockFilePkgs {
 		packages[pkg.Name] = pkg
 		for _, subPkg := range pkg.Dependencies {
