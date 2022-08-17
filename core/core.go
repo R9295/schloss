@@ -26,7 +26,7 @@ type Diff interface {
 type DependencyDiff struct {
 	Type     DiffType     `json:"type"`
 	MetaType DiffMetaType `json:"meta_type"`
-	Name     string       `jsoa:"dependency_name"`
+	Name     string       `json:"dependency_name"`
 	Parent   string       `json:"parent"`
 	Version  string       `json:"version,omitempty"`
 }
