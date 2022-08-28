@@ -3,7 +3,7 @@
 Detect potential lockfile tampering as your dependencies grow.
 
 Supported lockfiles:
-- [x] Poetry (Python)
+- [x] [Poetry](/contrib/poetry) (Python)
 - [x] [Cargo](/contrib/cargo)  (Rust)
 - [ ] Pipenv (Python)
 - [ ] Yarn   (Node.js)
