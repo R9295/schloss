@@ -50,7 +50,7 @@ func TestDiffPackagesRemovePackage(t *testing.T) {
 		},
 	}}
 	var diffList []core.Diff
-	DiffLockfiles(&oldLockfile, &newLockfile, &diffList)
+	DiffLockfiles(&oldLockfile, &newLockfile, &diffList, "rootPkg")
 	assert.Equal(t, len(diffList), 1)
 	assert.Equal(t, diffList[0], core.DependencyDiff{
 		Type:     core.REMOVED,
@@ -81,7 +81,7 @@ func TestDiffPackagesAddPackage(t *testing.T) {
 		},
 	}}
 	var diffList []core.Diff
-	DiffLockfiles(&oldLockfile, &newLockfile, &diffList)
+	DiffLockfiles(&oldLockfile, &newLockfile, &diffList, "rootPkg")
 	assert.Equal(t, len(diffList), 1)
 	assert.Equal(t, diffList[0], core.DependencyDiff{
 		Type:     core.ADDED,
@@ -263,7 +263,7 @@ func TestNoDuplicateModifiedSubDependencyWhenAdding(t *testing.T) {
 	},
 	}
 	var diffList []core.Diff
-	DiffLockfiles(&oldLockfile, &newLockfile, &diffList)
+	DiffLockfiles(&oldLockfile, &newLockfile, &diffList, "rootPkg")
 	assert.Equal(t, len(diffList), 3)
 	assert.Equal(
 		t, []core.Diff{
@@ -311,7 +311,7 @@ func TestNoDuplicateModifiedSubDependencyWhenRemoving(t *testing.T) {
 		},
 	}}
 	var diffList []core.Diff
-	DiffLockfiles(&oldLockfile, &newLockfile, &diffList)
+	DiffLockfiles(&oldLockfile, &newLockfile, &diffList, "rootPkg")
 	fmt.Println(diffList)
 	assert.Equal(t, len(diffList), 3)
 	assert.Equal(
