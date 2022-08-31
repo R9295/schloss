@@ -2,6 +2,8 @@ package core
 
 import (
 	"fmt"
+	"os"
+	"strings"
 
 	"github.com/waigani/diffparser"
 )
@@ -9,14 +11,15 @@ import (
 type LockFileType struct {
 	FileName string
 	Format   string
+	RootFile string
 }
 
 func GetLockfileType(lockfileType string) (LockFileType, error) {
 	switch lockfileType {
 	case "cargo":
-		return LockFileType{FileName: "Cargo.lock", Format: "toml"}, nil
+		return LockFileType{FileName: "Cargo.lock", Format: "toml", RootFile: "Cargo.toml"}, nil
 	case "poetry":
-		return LockFileType{FileName: "poetry.lock", Format: "toml"}, nil
+		return LockFileType{FileName: "poetry.lock", Format: "toml", RootFile: "pyproject.toml"}, nil
 	}
 	return LockFileType{}, fmt.Errorf("cli: lockfile type \"%s\" is not supported.", lockfileType)
 }
@@ -38,4 +41,19 @@ func GetLockfilesFromDiff(lockfileDiffFile *diffparser.DiffFile) (string, string
 		}
 	}
 	return newLockfile, oldLockfile
+}
+
+func GetRootFile(lockfilePath string, rootFileName string) (string, error){
+	rootFilePathSplit := strings.Split(lockfilePath, "/")
+	rootFilePathSplit = rootFilePathSplit[:len(rootFilePathSplit)-1]
+	rootFilePath := fmt.Sprintf("%s/%s", strings.Join(rootFilePathSplit, "/"), rootFileName)
+	rootFile, err := os.ReadFile(rootFilePath)
+	if err != nil {
+		return "", err
+	}
+	rootFileStr := string(rootFile)
+	if err != nil {
+		return "", err
+	}
+	return rootFileStr, nil
 }

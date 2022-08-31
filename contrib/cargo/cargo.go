@@ -12,9 +12,15 @@ type LockfilePackage struct {
 	Checksum     string
 	Dependencies []string
 }
-
 type Lockfile struct {
 	Package []LockfilePackage
+}
+
+type RootPackage struct {
+	Name string
+}
+type RootFile struct {
+	Package RootPackage
 }
 
 type ParsedSubPackages map[string][]string
@@ -101,7 +107,7 @@ func diffPackages(oldPkg *LockfilePackage, newPkg *LockfilePackage, diffList *[]
 	}
 }
 
-func DiffLockfiles(oldLockfileToml *Lockfile, newLockfileToml *Lockfile, diffList *[]core.Diff) {
+func DiffLockfiles(oldLockfileToml *Lockfile, newLockfileToml *Lockfile, diffList *[]core.Diff, rootPkg string) {
 	oldPkgs, oldSubPackages := collectPackages(oldLockfileToml.Package)
 	newPkgs, newSubPackages := collectPackages(newLockfileToml.Package)
 	diffedSubPackages := diffSubPackages(oldSubPackages, newSubPackages)
@@ -133,7 +139,15 @@ func DiffLockfiles(oldLockfileToml *Lockfile, newLockfileToml *Lockfile, diffLis
 	*diffList = append(*diffList, subPkgDiff...)
 }
 
-func Diff(oldLockfile *string, newLockfile *string, diffList *[]core.Diff) error {
+func GetRootPackageName(rootFile *string) (string, error) {
+	rootToml, err := toml.ParseLockfile[RootFile](*rootFile)
+	if err != nil {
+		return "", err
+	}
+	return rootToml.Package.Name, nil
+}
+
+func Diff(rootFile *string, oldLockfile *string, newLockfile *string, diffList *[]core.Diff) error {
 	oldLockfileToml, err := toml.ParseLockfile[Lockfile](*oldLockfile)
 	if err != nil {
 		return err
@@ -142,6 +156,10 @@ func Diff(oldLockfile *string, newLockfile *string, diffList *[]core.Diff) error
 	if err != nil {
 		return err
 	}
-	DiffLockfiles(&oldLockfileToml, &newLockfileToml, diffList)
+	rootPkg, err := GetRootPackageName(rootFile)
+	if err != nil {
+		return err
+	}
+	DiffLockfiles(&oldLockfileToml, &newLockfileToml, diffList, rootPkg)
 	return nil
 }
