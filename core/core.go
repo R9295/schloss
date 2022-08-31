@@ -59,7 +59,7 @@ type FieldDiff struct {
 }
 
 func (diff FieldDiff) RenderHumanReadable() string {
-	return fmt.Sprintf("%s %s %s | (old)%s=%s & (new)%s=%s",
+	return fmt.Sprintf("%s %s %s\n- %s=%s\n+ %s=%s",
 		diff.Type,
 		diff.MetaType,
 		diff.Name,
