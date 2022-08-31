@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os/exec"
 	"regexp"
+	"strings"
 )
 
 func CheckUntrackedFiles(fileName string) ([]string, int, error) {
@@ -33,4 +34,12 @@ func GetSingleDiff(filePath string, commitAmount uint) (string, error) {
 		return "", err
 	}
 	return string(diff), nil
+}
+
+func GetPrevCommitHash() (string, error) {
+	hash, err := exec.Command("git", "rev-list", "--parents", "--no-walk", "HEAD").Output()
+	if err != nil {
+		return "", err
+	}
+	return strings.Split(string(hash), " ")[0], nil
 }

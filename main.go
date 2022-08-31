@@ -18,6 +18,8 @@ var opts struct {
 	IgnoreUntracked bool   `long:"ignore-untracked" description:"Ignore Untracked Log Files"`
 	Format          string `short:"f" long:"fmt" description:"Format of output, options: json, human. Default: human"`
 	CommitAmount    uint   `long:"commit-amount" description:"diff commit amount (HEAD~commitAmount). Default: 1"`
+	Log             bool   `long:"log" description:"Log your lockfile diff"`
+	LogFile         string `long:"log-file" description:"File to log your diff into. Default: schloss.log"`
 }
 
 func run() error {
@@ -85,13 +87,19 @@ func run() error {
 					return err
 				}
 			}
+			var rendered string
 			if opts.Format == "json" {
-				if err := core.RenderJSON(&diffList); err != nil {
+				rendered, err = core.RenderJSON(&diffList)
+				if err != nil {
 					return err
 				}
 			} else {
-				core.RenderHumanReadable(&diffList)
+				rendered = core.RenderHumanReadable(&diffList)
 			}
+			if opts.Log {
+				core.Log(opts.LogFile, rendered)
+			}
+			fmt.Println(rendered)
 		}
 	}
 	fmt.Println("----------------------------------------------------------------------")

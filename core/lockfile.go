@@ -21,7 +21,7 @@ func GetLockfileType(lockfileType string) (LockFileType, error) {
 	return LockFileType{}, fmt.Errorf("cli: lockfile type \"%s\" is not supported.", lockfileType)
 }
 
-func GetLockfilesFromDiff(lockfileDiffFile *diffparser.DiffFile) (string, string){
+func GetLockfilesFromDiff(lockfileDiffFile *diffparser.DiffFile) (string, string) {
 	newLockfile := ""
 	oldLockfile := ""
 	for _, hunk := range lockfileDiffFile.Hunks {

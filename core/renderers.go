@@ -5,17 +5,18 @@ import (
 	"fmt"
 )
 
-func RenderHumanReadable(diffList *[]Diff) {
-	for _, item := range *diffList {
-		fmt.Println(item.RenderHumanReadable())
+func RenderHumanReadable(diffList *[]Diff) string {
+	var text string
+	for index, item := range *diffList {
+		text = fmt.Sprintf("%s\n%d.%s", text, index+1, item.RenderHumanReadable())
 	}
+	return text
 }
 
-func RenderJSON(diffList *[]Diff) error {
+func RenderJSON(diffList *[]Diff) (string, error) {
 	jsonDiff, err := json.Marshal(diffList)
 	if err != nil {
-		return err
+		return "", err
 	}
-	fmt.Println(string(jsonDiff))
-	return nil
+	return string(jsonDiff), nil
 }
