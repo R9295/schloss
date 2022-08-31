@@ -52,8 +52,5 @@ func GetRootFile(lockfilePath string, rootFileName string) (string, error){
 		return "", err
 	}
 	rootFileStr := string(rootFile)
-	if err != nil {
-		return "", err
-	}
 	return rootFileStr, nil
 }
