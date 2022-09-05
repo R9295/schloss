@@ -87,7 +87,7 @@ func TestDiffPackagesAddPackage(t *testing.T) {
 		Type:     core.ADDED,
 		MetaType: core.DEPENDENCY,
 		Name:     "deno_core",
-		Parent:   "",
+		Parent:   "rootPkg",
 		Version:  "42.0",
 	})
 }
@@ -268,7 +268,7 @@ func TestNoDuplicateModifiedSubDependencyWhenAdding(t *testing.T) {
 	assert.Equal(
 		t, []core.Diff{
 			core.GenerateDependencyFieldDiff("sub_dep", "version", "0.1", "0.2"),
-			core.GenerateAddedDependencyDiff("deno_core", "42.0"),
+			core.GenerateAddedDependencyDiff("deno_core", "42.0", "rootPkg"),
 			core.GenerateModifiedSubDependencyDiff("sub_dep", "tokio"),
 		},
 		diffList)

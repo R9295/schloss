@@ -8,6 +8,12 @@ import (
 	"github.com/R9295/schloss/core"
 )
 
+type RootTool struct {
+	Name string
+}
+type RootFile struct {
+	Tool map[string]RootTool
+}
 type LockfileMetaTypedataFile struct {
 	File string
 	Hash string
@@ -107,7 +113,7 @@ func diffPackages(oldPkg *LockfilePackage, newPkg *LockfilePackage, diffList *[]
 	}
 }
 
-func DiffLockfiles(oldLockfileToml *Lockfile, newLockfileToml *Lockfile, diffList *[]core.Diff) {
+func DiffLockfiles(oldLockfileToml *Lockfile, newLockfileToml *Lockfile, diffList *[]core.Diff, rootPkg string) {
 	oldPkgs, oldSubPackages := collectPackages(oldLockfileToml)
 	newPkgs, newSubPackages := collectPackages(newLockfileToml)
 	diffedSubPackages := diffSubPackages(oldSubPackages, newSubPackages)
@@ -121,7 +127,7 @@ func DiffLockfiles(oldLockfileToml *Lockfile, newLockfileToml *Lockfile, diffLis
 		}
 	}
 	for newPkgName, newPkgValue := range newPkgs {
-		*diffList = append(*diffList, core.GenerateAddedDependencyDiff(newPkgName, newPkgValue.Version))
+		*diffList = append(*diffList, core.GenerateAddedDependencyDiff(newPkgName, newPkgValue.Version, rootPkg))
 	}
 
 	var subPkgDiff []core.Diff
@@ -139,7 +145,21 @@ func DiffLockfiles(oldLockfileToml *Lockfile, newLockfileToml *Lockfile, diffLis
 	*diffList = append(*diffList, subPkgDiff...)
 }
 
-func Diff(oldLockfile *string, newLockfile *string, diffList *[]core.Diff) error {
+func GetRootPackageName(rootFile *string) (string, error) {
+	rootToml, err := toml.ParseLockfile[RootFile](*rootFile)
+	if err != nil {
+		return "", err
+	}
+	poetryRoot, exists := rootToml.Tool["poetry"] 
+	if exists == false {
+		return "", fmt.Errorf("root file did not contain tool.poetry")
+	} 
+	if poetryRoot.Name ==  "" {
+		return "", fmt.Errorf("root file did not declare tool.poetry.name")
+	}
+	return rootToml.Tool["poetry"].Name, nil
+}
+func Diff(rootFile *string, oldLockfile *string, newLockfile *string, diffList *[]core.Diff) error {
 	oldLockfileToml, err := toml.ParseLockfile[Lockfile](*oldLockfile)
 	if err != nil {
 		return err
@@ -148,6 +168,10 @@ func Diff(oldLockfile *string, newLockfile *string, diffList *[]core.Diff) error
 	if err != nil {
 		return err
 	}
-	DiffLockfiles(&oldLockfileToml, &newLockfileToml, diffList)
+	rootPkg, err := GetRootPackageName(rootFile)
+	if err != nil {
+		return err
+	}
+	DiffLockfiles(&oldLockfileToml, &newLockfileToml, diffList, rootPkg)
 	return nil
 }

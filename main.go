@@ -83,7 +83,7 @@ func run() error {
 			}
 			var diffList []core.Diff
 			if opts.LockfileType == "poetry" {
-				if err := poetry.Diff(&oldLockfile, &newLockfile, &diffList); err != nil {
+				if err := poetry.Diff(&rootFile, &oldLockfile, &newLockfile, &diffList); err != nil {
 					return err
 				}
 			} else {

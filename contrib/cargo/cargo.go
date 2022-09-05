@@ -121,7 +121,7 @@ func DiffLockfiles(oldLockfileToml *Lockfile, newLockfileToml *Lockfile, diffLis
 		}
 	}
 	for newPkgName, newPkgValue := range newPkgs {
-		*diffList = append(*diffList, core.GenerateAddedDependencyDiff(newPkgName, newPkgValue.Version))
+		*diffList = append(*diffList, core.GenerateAddedDependencyDiff(newPkgName, newPkgValue.Version, rootPkg))
 	}
 	var subPkgDiff []core.Diff
 

@@ -96,12 +96,12 @@ func GenerateModifiedSubDependencyDiff(pkgName string, parent string) Dependency
 	}
 }
 
-func GenerateAddedDependencyDiff(pkgName string, version string) DependencyDiff {
+func GenerateAddedDependencyDiff(pkgName string, version string, parent string) DependencyDiff {
 	return DependencyDiff{
 		Type:     ADDED,
 		MetaType: DEPENDENCY,
 		Name:     pkgName,
-		Parent:   "",
+		Parent:   parent,
 		Version:  version,
 	}
 }
