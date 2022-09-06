@@ -74,7 +74,7 @@ func doesSubdependencyExist(dependencyList []string, check string) bool {
 func diffPackages(oldPkg *LockfilePackage, newPkg *LockfilePackage, diffList *[]core.Diff) {
 	if oldPkg.Version != newPkg.Version {
 		*diffList = append(*diffList,
-			core.GenerateDependencyFieldDiff(newPkg.Name,
+			core.MakeDependencyFieldDiff(newPkg.Name,
 				"version",
 				oldPkg.Version,
 				newPkg.Version),
@@ -82,7 +82,7 @@ func diffPackages(oldPkg *LockfilePackage, newPkg *LockfilePackage, diffList *[]
 	}
 	if oldPkg.Checksum != newPkg.Checksum {
 		*diffList = append(*diffList,
-			core.GenerateDependencyFieldDiff(newPkg.Name,
+			core.MakeDependencyFieldDiff(newPkg.Name,
 				"checksum",
 				oldPkg.Checksum,
 				newPkg.Checksum),
@@ -90,7 +90,7 @@ func diffPackages(oldPkg *LockfilePackage, newPkg *LockfilePackage, diffList *[]
 	}
 	if oldPkg.Source != newPkg.Source {
 		*diffList = append(*diffList,
-			core.GenerateDependencyFieldDiff(newPkg.Name,
+			core.MakeDependencyFieldDiff(newPkg.Name,
 				"source",
 				oldPkg.Source,
 				newPkg.Source),
@@ -99,14 +99,14 @@ func diffPackages(oldPkg *LockfilePackage, newPkg *LockfilePackage, diffList *[]
 	for _, dependency := range oldPkg.Dependencies {
 		if doesSubdependencyExist(newPkg.Dependencies, dependency) == false {
 			*diffList = append(*diffList,
-				core.GenerateRemovedSubDependencyDiff(dependency, oldPkg.Name),
+				core.MakeRemovedSubDependencyDiff(dependency, oldPkg.Name),
 			)
 		}
 	}
 	for _, dependency := range newPkg.Dependencies {
 		if doesSubdependencyExist(oldPkg.Dependencies, dependency) == false {
 			*diffList = append(*diffList,
-				core.GenerateAddedSubDependencyDiff(dependency, newPkg.Name, ""),
+				core.MakeAddedSubDependencyDiff(dependency, newPkg.Name, ""),
 			)
 		}
 	}
@@ -124,7 +124,7 @@ func DiffLockfiles(
 	for oldPkgName, oldPkg := range oldPkgs {
 		newPkg, exists := newPkgs[oldPkgName]
 		if !exists {
-			*diffList = append(*diffList, core.GenerateRemovedDependencyDiff(oldPkgName))
+			*diffList = append(*diffList, core.MakeRemovedDependencyDiff(oldPkgName))
 		} else {
 			diffPackages(&oldPkg, &newPkg, diffList)
 			delete(newPkgs, oldPkgName)
@@ -133,7 +133,7 @@ func DiffLockfiles(
 	for newPkgName, newPkgValue := range newPkgs {
 		*diffList = append(
 			*diffList,
-			core.GenerateAddedDependencyDiff(newPkgName, newPkgValue.Version, rootPkg),
+			core.MakeAddedDependencyDiff(newPkgName, newPkgValue.Version, rootPkg),
 		)
 	}
 	var subPkgDiff []core.Diff
@@ -146,7 +146,7 @@ func DiffLockfiles(
 				for _, parent := range parents {
 					subPkgDiff = append(
 						subPkgDiff,
-						core.GenerateModifiedSubDependencyDiff(depName, parent),
+						core.MakeModifiedSubDependencyDiff(depName, parent),
 					)
 				}
 			}

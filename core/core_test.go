@@ -6,8 +6,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGenerateDependencyFieldDiff(t *testing.T) {
-	assert.Equal(t, GenerateDependencyFieldDiff("deno_core", "version", "old", "new"),
+func TestMakeDependencyFieldDiff(t *testing.T) {
+	assert.Equal(t, MakeDependencyFieldDiff("deno_core", "version", "old", "new"),
 		FieldDiff{
 			Type:     MODIFIED,
 			MetaType: DEPENDENCY,
@@ -18,8 +18,8 @@ func TestGenerateDependencyFieldDiff(t *testing.T) {
 		})
 }
 
-func TestGenerateModifiedSubDependencyDiff(t *testing.T) {
-	assert.Equal(t, GenerateModifiedSubDependencyDiff("deno_core", "root_pkg"),
+func TestMakeModifiedSubDependencyDiff(t *testing.T) {
+	assert.Equal(t, MakeModifiedSubDependencyDiff("deno_core", "root_pkg"),
 		DependencyDiff{
 			Type:     MODIFIED,
 			MetaType: SUB_DEPENDENCY,
@@ -28,8 +28,8 @@ func TestGenerateModifiedSubDependencyDiff(t *testing.T) {
 		})
 }
 
-func TestGenerateAddedDependencyDiff(t *testing.T) {
-	assert.Equal(t, GenerateAddedDependencyDiff("deno_core", "0.1", "root_pkg"),
+func TestMakeAddedDependencyDiff(t *testing.T) {
+	assert.Equal(t, MakeAddedDependencyDiff("deno_core", "0.1", "root_pkg"),
 		DependencyDiff{
 			Type:     ADDED,
 			MetaType: DEPENDENCY,
@@ -39,8 +39,8 @@ func TestGenerateAddedDependencyDiff(t *testing.T) {
 		})
 }
 
-func TestGenerateRemovedDependencyDiff(t *testing.T) {
-	assert.Equal(t, GenerateRemovedDependencyDiff("deno_core"),
+func TestMakeRemovedDependencyDiff(t *testing.T) {
+	assert.Equal(t, MakeRemovedDependencyDiff("deno_core"),
 		DependencyDiff{
 			Type:     REMOVED,
 			MetaType: DEPENDENCY,
@@ -49,8 +49,8 @@ func TestGenerateRemovedDependencyDiff(t *testing.T) {
 		})
 }
 
-func TestGenerateRemovedSubDependencyDiff(t *testing.T) {
-	assert.Equal(t, GenerateRemovedSubDependencyDiff("assert", "deno_core"),
+func TestMakeRemovedSubDependencyDiff(t *testing.T) {
+	assert.Equal(t, MakeRemovedSubDependencyDiff("assert", "deno_core"),
 		DependencyDiff{
 			Type:     REMOVED,
 			MetaType: SUB_DEPENDENCY,
@@ -59,8 +59,8 @@ func TestGenerateRemovedSubDependencyDiff(t *testing.T) {
 		})
 }
 
-func TestGenerateAddedSubDependencyDiff(t *testing.T) {
-	assert.Equal(t, GenerateAddedSubDependencyDiff("assert", "deno_core", "0.1"),
+func TestMakeAddedSubDependencyDiff(t *testing.T) {
+	assert.Equal(t, MakeAddedSubDependencyDiff("assert", "deno_core", "0.1"),
 		DependencyDiff{
 			Type:     ADDED,
 			MetaType: SUB_DEPENDENCY,

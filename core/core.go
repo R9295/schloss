@@ -77,7 +77,7 @@ func (diff FieldDiff) GetName() string {
 	return diff.Name
 }
 
-func GenerateDependencyFieldDiff(
+func MakeDependencyFieldDiff(
 	pkgName string,
 	fieldName string,
 	oldVal string,
@@ -93,7 +93,7 @@ func GenerateDependencyFieldDiff(
 	}
 }
 
-func GenerateModifiedSubDependencyDiff(pkgName string, parent string) DependencyDiff {
+func MakeModifiedSubDependencyDiff(pkgName string, parent string) DependencyDiff {
 	return DependencyDiff{
 		Type:     MODIFIED,
 		MetaType: SUB_DEPENDENCY,
@@ -102,7 +102,7 @@ func GenerateModifiedSubDependencyDiff(pkgName string, parent string) Dependency
 	}
 }
 
-func GenerateAddedDependencyDiff(pkgName string, version string, parent string) DependencyDiff {
+func MakeAddedDependencyDiff(pkgName string, version string, parent string) DependencyDiff {
 	return DependencyDiff{
 		Type:     ADDED,
 		MetaType: DEPENDENCY,
@@ -112,7 +112,7 @@ func GenerateAddedDependencyDiff(pkgName string, version string, parent string) 
 	}
 }
 
-func GenerateRemovedDependencyDiff(pkgName string) DependencyDiff {
+func MakeRemovedDependencyDiff(pkgName string) DependencyDiff {
 	return DependencyDiff{
 		Type:     REMOVED,
 		MetaType: DEPENDENCY,
@@ -121,7 +121,7 @@ func GenerateRemovedDependencyDiff(pkgName string) DependencyDiff {
 	}
 }
 
-func GenerateRemovedSubDependencyDiff(pkgName, parent string) DependencyDiff {
+func MakeRemovedSubDependencyDiff(pkgName, parent string) DependencyDiff {
 	return DependencyDiff{
 		Type:     REMOVED,
 		MetaType: SUB_DEPENDENCY,
@@ -130,7 +130,7 @@ func GenerateRemovedSubDependencyDiff(pkgName, parent string) DependencyDiff {
 	}
 }
 
-func GenerateAddedSubDependencyDiff(pkgName string, parent string, version string) DependencyDiff {
+func MakeAddedSubDependencyDiff(pkgName string, parent string, version string) DependencyDiff {
 	return DependencyDiff{
 		Type:     ADDED,
 		MetaType: SUB_DEPENDENCY,
