@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestTestGenerateDependencyFieldDiff(t *testing.T) {
+func TestGenerateDependencyFieldDiff(t *testing.T) {
 	assert.Equal(t, GenerateDependencyFieldDiff("deno_core", "version", "old", "new"),
 	FieldDiff{
 		Type:     MODIFIED,
@@ -18,7 +18,7 @@ func TestTestGenerateDependencyFieldDiff(t *testing.T) {
 	})
 }
 
-func TestTestGenerateModifiedSubDependencyDiff(t *testing.T) {
+func TestGenerateModifiedSubDependencyDiff(t *testing.T) {
 	assert.Equal(t, GenerateModifiedSubDependencyDiff("deno_core", "root_pkg"),
 	DependencyDiff{
 		Type:     MODIFIED,
@@ -28,7 +28,7 @@ func TestTestGenerateModifiedSubDependencyDiff(t *testing.T) {
 	})
 }
 
-func TestTestGenerateAddedDependencyDiff(t *testing.T) {
+func TestGenerateAddedDependencyDiff(t *testing.T) {
 	assert.Equal(t, GenerateAddedDependencyDiff("deno_core", "0.1", "root_pkg"),
 	DependencyDiff{
 		Type:     ADDED,
@@ -39,7 +39,7 @@ func TestTestGenerateAddedDependencyDiff(t *testing.T) {
 	})
 }
 
-func TestTestGenerateRemovedDependencyDiff(t *testing.T) {
+func TestGenerateRemovedDependencyDiff(t *testing.T) {
 	assert.Equal(t, GenerateRemovedDependencyDiff("deno_core"),
 	DependencyDiff{
 		Type:     REMOVED,
