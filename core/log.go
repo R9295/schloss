@@ -22,11 +22,20 @@ func Log(fileName string, diff string) error {
 	if err != nil {
 		return err
 	}
-	diff = fmt.Sprintf("previous commit: %s\n%s\n\n", commitHash, diff)
+	header := fmt.Sprintf("previous commit: %s", commitHash)
+	diff = fmt.Sprintf("%s\n%s\n\n", header, diff)
 	if _, err := tempFile.WriteString(diff); err != nil {
 		return err
 	}
 	scanner := bufio.NewScanner(logFile)
+	scanner.Scan()
+	if scanner.Text() == header {
+		if err := os.Remove(tempFileName); err != nil {
+			return err
+		}
+		return fmt.Errorf("A schloss entry with the previous commit already exists")
+	}
+	logFile.Seek(0,0)
 	for scanner.Scan() {
 		if _, err := tempFile.WriteString(fmt.Sprintf("%s\n", scanner.Text())); err != nil {
 			return err

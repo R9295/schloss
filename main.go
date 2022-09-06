@@ -103,7 +103,9 @@ func run() error {
 				rendered = core.RenderHumanReadable(&diffList)
 			}
 			if opts.Log {
-				core.Log(opts.LogFile, rendered)
+				if err := core.Log(opts.LogFile, rendered); err != nil {
+					return err
+				}
 			}
 			fmt.Println(rendered)
 		}
