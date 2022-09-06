@@ -52,12 +52,7 @@ func TestDiffPackagesRemovePackage(t *testing.T) {
 	var diffList []core.Diff
 	DiffLockfiles(&oldLockfile, &newLockfile, &diffList, "rootPkg")
 	assert.Equal(t, len(diffList), 1)
-	assert.Equal(t, diffList[0], core.DependencyDiff{
-		Type:     core.REMOVED,
-		MetaType: core.DEPENDENCY,
-		Name:     "deno_core",
-		Parent:   "",
-	})
+	assert.Equal(t, diffList[0], core.GenerateRemovedDependencyDiff("deno_core"))
 }
 
 func TestDiffPackagesAddPackage(t *testing.T) {
@@ -83,13 +78,7 @@ func TestDiffPackagesAddPackage(t *testing.T) {
 	var diffList []core.Diff
 	DiffLockfiles(&oldLockfile, &newLockfile, &diffList, "rootPkg")
 	assert.Equal(t, len(diffList), 1)
-	assert.Equal(t, diffList[0], core.DependencyDiff{
-		Type:     core.ADDED,
-		MetaType: core.DEPENDENCY,
-		Name:     "deno_core",
-		Parent:   "rootPkg",
-		Version:  "42.0",
-	})
+	assert.Equal(t, diffList[0], core.GenerateAddedDependencyDiff("deno_core", "42.0", "rootPkg"))
 }
 
 func TestDiffPackagesPackageVersion(t *testing.T) {
@@ -109,14 +98,13 @@ func TestDiffPackagesPackageVersion(t *testing.T) {
 	var diffList []core.Diff
 	diffPackages(&oldPkg, &newPkg, &diffList)
 	assert.Equal(t, len(diffList), 1)
-	assert.Equal(t, diffList[0], core.FieldDiff{
-		Type:     core.MODIFIED,
-		MetaType: core.DEPENDENCY,
-		Name:     "parserkiosk",
-		Field:    "version",
-		OldValue: oldPkg.Version,
-		NewValue: newPkg.Version,
-	})
+	assert.Equal(t, diffList[0],
+		core.GenerateDependencyFieldDiff(
+			"parserkiosk",
+			"version",
+			oldPkg.Version,
+			newPkg.Version,
+		))
 }
 
 func TestDiffPackagesPackageSouce(t *testing.T) {
@@ -136,14 +124,13 @@ func TestDiffPackagesPackageSouce(t *testing.T) {
 	var diffList []core.Diff
 	diffPackages(&oldPkg, &newPkg, &diffList)
 	assert.Equal(t, len(diffList), 1)
-	assert.Equal(t, diffList[0], core.FieldDiff{
-		Type:     core.MODIFIED,
-		MetaType: core.DEPENDENCY,
-		Name:     "parserkiosk",
-		Field:    "source",
-		OldValue: oldPkg.Source,
-		NewValue: newPkg.Source,
-	})
+	assert.Equal(t, diffList[0],
+		core.GenerateDependencyFieldDiff(
+			"parserkiosk",
+			"source",
+			oldPkg.Source,
+			newPkg.Source,
+		))
 }
 
 func TestDiffPackagesPackageChecksum(t *testing.T) {
@@ -163,14 +150,12 @@ func TestDiffPackagesPackageChecksum(t *testing.T) {
 	var diffList []core.Diff
 	diffPackages(&oldPkg, &newPkg, &diffList)
 	assert.Equal(t, len(diffList), 1)
-	assert.Equal(t, diffList[0], core.FieldDiff{
-		Type:     core.MODIFIED,
-		MetaType: core.DEPENDENCY,
-		Name:     "parserkiosk",
-		Field:    "checksum",
-		NewValue: newPkg.Checksum,
-		OldValue: oldPkg.Checksum,
-	})
+	assert.Equal(t, diffList[0], core.GenerateDependencyFieldDiff(
+		"parserkiosk",
+		"checksum",
+		oldPkg.Checksum,
+		newPkg.Checksum,
+	))
 }
 
 func TestDiffPackagesSubDependencyAdd(t *testing.T) {
@@ -191,13 +176,11 @@ func TestDiffPackagesSubDependencyAdd(t *testing.T) {
 	var diffList []core.Diff
 	diffPackages(&oldPkg, &newPkg, &diffList)
 	assert.Equal(t, len(diffList), 1)
-	assert.Equal(t, diffList[0], core.DependencyDiff{
-		Type:     core.ADDED,
-		MetaType: core.SUB_DEPENDENCY,
-		Name:     "new",
-		Parent:   "parserkiosk",
-		Version:  "",
-	})
+	assert.Equal(t, diffList[0], core.GenerateAddedSubDependencyDiff(
+		"new",
+		"parserkiosk",
+		"",
+	))
 }
 
 func TestDiffPackagesSubDependencyRemove(t *testing.T) {
@@ -218,12 +201,10 @@ func TestDiffPackagesSubDependencyRemove(t *testing.T) {
 	var diffList []core.Diff
 	diffPackages(&oldPkg, &newPkg, &diffList)
 	assert.Equal(t, len(diffList), 1)
-	assert.Equal(t, diffList[0], core.DependencyDiff{
-		Type:     core.REMOVED,
-		MetaType: core.SUB_DEPENDENCY,
-		Name:     "remove",
-		Parent:   "parserkiosk",
-	})
+	assert.Equal(t, diffList[0], core.GenerateRemovedSubDependencyDiff(
+		"remove",
+		"parserkiosk",
+	))
 }
 
 func TestNoDuplicateModifiedSubDependencyWhenAdding(t *testing.T) {
