@@ -76,7 +76,13 @@ func (diff FieldDiff) GetType() DiffType {
 func (diff FieldDiff) GetName() string {
 	return diff.Name
 }
-func GenerateDependencyFieldDiff(pkgName string, fieldName string, oldVal string, newVal string) FieldDiff {
+
+func GenerateDependencyFieldDiff(
+	pkgName string,
+	fieldName string,
+	oldVal string,
+	newVal string,
+) FieldDiff {
 	return FieldDiff{
 		Type:     MODIFIED,
 		MetaType: DEPENDENCY,

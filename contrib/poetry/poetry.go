@@ -54,7 +54,10 @@ func collectPackages(lockFile *Lockfile) (map[string]LockfilePackage, ParsedSubP
 	return packages, subPackages
 }
 
-func diffSubPackages(oldSubPackages ParsedSubPackages, newSubPackages ParsedSubPackages) ParsedSubPackages {
+func diffSubPackages(
+	oldSubPackages ParsedSubPackages,
+	newSubPackages ParsedSubPackages,
+) ParsedSubPackages {
 	diff := make(ParsedSubPackages)
 	for pkgName, oldValue := range oldSubPackages {
 		newValue, exists := newSubPackages[pkgName]
@@ -113,7 +116,12 @@ func diffPackages(oldPkg *LockfilePackage, newPkg *LockfilePackage, diffList *[]
 	}
 }
 
-func DiffLockfiles(oldLockfileToml *Lockfile, newLockfileToml *Lockfile, diffList *[]core.Diff, rootPkg string) {
+func DiffLockfiles(
+	oldLockfileToml *Lockfile,
+	newLockfileToml *Lockfile,
+	diffList *[]core.Diff,
+	rootPkg string,
+) {
 	oldPkgs, oldSubPackages := collectPackages(oldLockfileToml)
 	newPkgs, newSubPackages := collectPackages(newLockfileToml)
 	diffedSubPackages := diffSubPackages(oldSubPackages, newSubPackages)
@@ -127,7 +135,10 @@ func DiffLockfiles(oldLockfileToml *Lockfile, newLockfileToml *Lockfile, diffLis
 		}
 	}
 	for newPkgName, newPkgValue := range newPkgs {
-		*diffList = append(*diffList, core.GenerateAddedDependencyDiff(newPkgName, newPkgValue.Version, rootPkg))
+		*diffList = append(
+			*diffList,
+			core.GenerateAddedDependencyDiff(newPkgName, newPkgValue.Version, rootPkg),
+		)
 	}
 
 	var subPkgDiff []core.Diff
@@ -137,7 +148,10 @@ func DiffLockfiles(oldLockfileToml *Lockfile, newLockfileToml *Lockfile, diffLis
 			parents, exists := diffedSubPackages[depName]
 			if exists {
 				for _, parent := range parents {
-					subPkgDiff = append(subPkgDiff, core.GenerateModifiedSubDependencyDiff(depName, parent))
+					subPkgDiff = append(
+						subPkgDiff,
+						core.GenerateModifiedSubDependencyDiff(depName, parent),
+					)
 				}
 			}
 		}
@@ -150,11 +164,11 @@ func GetRootPackageName(rootFile *string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	poetryRoot, exists := rootToml.Tool["poetry"] 
+	poetryRoot, exists := rootToml.Tool["poetry"]
 	if exists == false {
 		return "", fmt.Errorf("root file did not contain tool.poetry")
-	} 
-	if poetryRoot.Name ==  "" {
+	}
+	if poetryRoot.Name == "" {
 		return "", fmt.Errorf("root file did not declare tool.poetry.name")
 	}
 	return rootToml.Tool["poetry"].Name, nil

@@ -8,7 +8,8 @@ import (
 )
 
 func CheckUntrackedFiles(fileName string) ([]string, int, error) {
-	untrackedFiles, err := exec.Command("git", "ls-files", "--others", "--exclude-standard").Output()
+	untrackedFiles, err := exec.Command("git", "ls-files", "--others", "--exclude-standard").
+		Output()
 	if err != nil {
 		return []string{}, 0, err
 	}
@@ -29,7 +30,8 @@ func GetSingleDiff(filePath string, commitAmount uint) (string, error) {
 	fmt.Println(filePath)
 
 	// your diff line length better not be bigger than that number! TODO: handle if not
-	diff, err := exec.Command("git", "diff", fmt.Sprintf("HEAD~%d", commitAmount), "-U99999999999999999", filePath).Output()
+	diff, err := exec.Command("git", "diff", fmt.Sprintf("HEAD~%d", commitAmount), "-U99999999999999999", filePath).
+		Output()
 	if err != nil {
 		return "", err
 	}

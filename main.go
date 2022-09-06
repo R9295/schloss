@@ -45,7 +45,9 @@ func run() error {
 			for _, file := range untrackedLockfiles {
 				fmt.Println(file)
 			}
-			fmt.Println("If you think this is a bug, you can silence it with --ignore-untracked and file a bug report")
+			fmt.Println(
+				"If you think this is a bug, you can silence it with --ignore-untracked and file a bug report",
+			)
 			return nil
 		}
 	}

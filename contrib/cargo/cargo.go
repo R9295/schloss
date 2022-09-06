@@ -25,7 +25,9 @@ type RootFile struct {
 
 type ParsedSubPackages map[string][]string
 
-func collectPackages(lockFilePkgs []LockfilePackage) (map[string]LockfilePackage, ParsedSubPackages) {
+func collectPackages(
+	lockFilePkgs []LockfilePackage,
+) (map[string]LockfilePackage, ParsedSubPackages) {
 	packages := make(map[string]LockfilePackage)
 	subPackages := make(ParsedSubPackages)
 	for _, pkg := range lockFilePkgs {
@@ -42,7 +44,10 @@ func collectPackages(lockFilePkgs []LockfilePackage) (map[string]LockfilePackage
 	return packages, subPackages
 }
 
-func diffSubPackages(oldSubPackages ParsedSubPackages, newSubPackages ParsedSubPackages) ParsedSubPackages {
+func diffSubPackages(
+	oldSubPackages ParsedSubPackages,
+	newSubPackages ParsedSubPackages,
+) ParsedSubPackages {
 	diff := make(ParsedSubPackages)
 	for pkgName, oldValue := range oldSubPackages {
 		newValue, exists := newSubPackages[pkgName]
@@ -107,7 +112,12 @@ func diffPackages(oldPkg *LockfilePackage, newPkg *LockfilePackage, diffList *[]
 	}
 }
 
-func DiffLockfiles(oldLockfileToml *Lockfile, newLockfileToml *Lockfile, diffList *[]core.Diff, rootPkg string) {
+func DiffLockfiles(
+	oldLockfileToml *Lockfile,
+	newLockfileToml *Lockfile,
+	diffList *[]core.Diff,
+	rootPkg string,
+) {
 	oldPkgs, oldSubPackages := collectPackages(oldLockfileToml.Package)
 	newPkgs, newSubPackages := collectPackages(newLockfileToml.Package)
 	diffedSubPackages := diffSubPackages(oldSubPackages, newSubPackages)
@@ -121,7 +131,10 @@ func DiffLockfiles(oldLockfileToml *Lockfile, newLockfileToml *Lockfile, diffLis
 		}
 	}
 	for newPkgName, newPkgValue := range newPkgs {
-		*diffList = append(*diffList, core.GenerateAddedDependencyDiff(newPkgName, newPkgValue.Version, rootPkg))
+		*diffList = append(
+			*diffList,
+			core.GenerateAddedDependencyDiff(newPkgName, newPkgValue.Version, rootPkg),
+		)
 	}
 	var subPkgDiff []core.Diff
 
@@ -131,7 +144,10 @@ func DiffLockfiles(oldLockfileToml *Lockfile, newLockfileToml *Lockfile, diffLis
 			parents, exists := diffedSubPackages[depName]
 			if exists {
 				for _, parent := range parents {
-					subPkgDiff = append(subPkgDiff, core.GenerateModifiedSubDependencyDiff(depName, parent))
+					subPkgDiff = append(
+						subPkgDiff,
+						core.GenerateModifiedSubDependencyDiff(depName, parent),
+					)
 				}
 			}
 		}
