@@ -209,7 +209,7 @@ func TestDiffPackagesSubDependencyRemove(t *testing.T) {
 
 func TestNoDuplicateModifiedSubDependencyWhenAdding(t *testing.T) {
 	/*
-		When adding a new pkg which has a shared, existing sub-dependency with an existing pkg
+		When adding a new pkg which has a shared sub-dependency with an existing pkg
 		if the sub-dependency is modified(eg. version bump), make sure the modification diff
 		is only for the existing pkg and not for the added.
 	*/
@@ -257,7 +257,7 @@ func TestNoDuplicateModifiedSubDependencyWhenAdding(t *testing.T) {
 
 func TestNoDuplicateModifiedSubDependencyWhenRemoving(t *testing.T) {
 	/*
-		When adding a new pkg which has a shared, existing sub-dependency with a removed pkg
+		When adding a new pkg which has a shared sub-dependency with a removed pkg
 		if the sub-dependency is modified(eg. version bump), make sure the modification diff
 		is only for the existing pkg and not for the removed.
 	*/
