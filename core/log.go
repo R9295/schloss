@@ -38,9 +38,6 @@ func getLatestEntryLineCount(fileName string) (int, error) {
 }
 
 func Log(fileName string, diff string, override bool) error {
-	if fileName == "" {
-		fileName = "schloss.log"
-	}
 	tempFileName := fmt.Sprintf("%s.temp", fileName)
 	commitHash, err := GetPrevCommitHash()
 	if err != nil {

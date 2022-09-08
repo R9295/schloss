@@ -19,7 +19,7 @@ var opts struct {
 	Format          string `short:"f" long:"fmt" description:"Format of output, options: json, human. Default: human"`
 	CommitAmount    uint   `long:"commit-amount" description:"diff commit amount (HEAD~commitAmount). Default: 1"`
 	Log             bool   `long:"log" description:"Log your lockfile diff"`
-	LogFile         string `long:"log-file" description:"File to log your diff into. Default: schloss.log"`
+	LogFile         string `long:"log-file" default:"schloss.log" description:"File to log your diff into. Default: schloss.log"`
 	OverrideLog     bool   `long:"override-log" description:"Override latest log entry if it's a duplicate"`
 }
 
