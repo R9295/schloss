@@ -6,6 +6,8 @@ import (
 	"os"
 )
 
+const ENTRY_SEPARATOR string = "----------------------------------------------------------------------------------------------------"
+
 func Log(fileName string, diff string) error {
 	if fileName == "" {
 		fileName = "schloss.log"
@@ -23,7 +25,7 @@ func Log(fileName string, diff string) error {
 		return err
 	}
 	header := fmt.Sprintf("previous commit: %s", commitHash)
-	diff = fmt.Sprintf("%s\n%s\n\n", header, diff)
+	diff = fmt.Sprintf("%s\n%s\n%s\n", header, diff, ENTRY_SEPARATOR)
 	if _, err := tempFile.WriteString(diff); err != nil {
 		return err
 	}
