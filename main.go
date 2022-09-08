@@ -16,17 +16,17 @@ import (
 var opts struct {
 	LockfileType    string `short:"t" long:"type" description:"Type of lockfile" required:"true"`
 	IgnoreUntracked bool   `long:"ignore-untracked" description:"Ignore Untracked Log Files"`
-	Format          string `short:"f" long:"fmt" description:"Format of output, options: json, human. Default: human"`
-	CommitAmount    uint   `long:"commit-amount" description:"diff commit amount (HEAD~commitAmount). Default: 1"`
+	Format          string `short:"f" long:"fmt" default:"human" description:"Format of output, options: json, human."`
+	CommitAmount    uint   `long:"commit-amount" default:"1" description:"diff commit amount (HEAD~commitAmount)."`
 	Log             bool   `long:"log" description:"Log your lockfile diff"`
-	LogFile         string `long:"log-file" default:"schloss.log" description:"File to log your diff into. Default: schloss.log"`
+	LogFile         string `long:"log-file" default:"schloss.log" description:"File to log your diff into."`
 	OverrideLog     bool   `long:"override-log" description:"Override latest log entry if it's a duplicate"`
 }
 
 func run() error {
 	_, err := flags.Parse(&opts)
 	if err != nil {
-		return err
+		return nil
 	}
 	lockfileType, err := core.GetLockfileType(opts.LockfileType)
 	if err != nil {
@@ -52,12 +52,7 @@ func run() error {
 			return nil
 		}
 	}
-	var commitAmount uint
-	if opts.CommitAmount > 0 {
-		commitAmount = opts.CommitAmount
-	} else {
-		commitAmount = 1
-	}
+	commitAmount := opts.CommitAmount
 	gitDiff, err := core.GetAllDiff(commitAmount)
 	if err != nil {
 		return err
