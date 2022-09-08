@@ -11,7 +11,7 @@ func DecodeToml[T any](text string, lockfileStruct T) error {
 	}
 	return nil
 }
-func ParseLockfile[T any](lockfile string) (T, error) {
+func ParseToml[T any](lockfile string) (T, error) {
 	var parsedLockfile T
 	if err := DecodeToml(lockfile, &parsedLockfile); err != nil {
 		return parsedLockfile, err

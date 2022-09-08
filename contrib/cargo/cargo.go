@@ -156,7 +156,7 @@ func DiffLockfiles(
 }
 
 func GetRootPackageName(rootFile *string) (string, error) {
-	rootToml, err := toml.ParseLockfile[RootFile](*rootFile)
+	rootToml, err := toml.ParseToml[RootFile](*rootFile)
 	if err != nil {
 		return "", err
 	}
@@ -164,11 +164,11 @@ func GetRootPackageName(rootFile *string) (string, error) {
 }
 
 func Diff(rootFile *string, oldLockfile *string, newLockfile *string, diffList *[]core.Diff) error {
-	oldLockfileToml, err := toml.ParseLockfile[Lockfile](*oldLockfile)
+	oldLockfileToml, err := toml.ParseToml[Lockfile](*oldLockfile)
 	if err != nil {
 		return err
 	}
-	newLockfileToml, err := toml.ParseLockfile[Lockfile](*newLockfile)
+	newLockfileToml, err := toml.ParseToml[Lockfile](*newLockfile)
 	if err != nil {
 		return err
 	}
