@@ -20,6 +20,7 @@ var opts struct {
 	CommitAmount    uint   `long:"commit-amount" description:"diff commit amount (HEAD~commitAmount). Default: 1"`
 	Log             bool   `long:"log" description:"Log your lockfile diff"`
 	LogFile         string `long:"log-file" description:"File to log your diff into. Default: schloss.log"`
+	OverrideLog     bool   `long:"override-log" description:"Override latest log entry if it's a duplicate"`
 }
 
 func run() error {
@@ -103,7 +104,7 @@ func run() error {
 				rendered = core.RenderHumanReadable(&diffList)
 			}
 			if opts.Log {
-				if err := core.Log(opts.LogFile, rendered); err != nil {
+				if err := core.Log(opts.LogFile, rendered, opts.OverrideLog); err != nil {
 					return err
 				}
 			}

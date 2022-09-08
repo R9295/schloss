@@ -8,7 +8,7 @@ import (
 
 const ENTRY_SEPARATOR string = "----------------------------------------------------------------------------------------------------"
 
-func Log(fileName string, diff string) error {
+func Log(fileName string, diff string, override bool) error {
 	if fileName == "" {
 		fileName = "schloss.log"
 	}
@@ -31,16 +31,31 @@ func Log(fileName string, diff string) error {
 	}
 	scanner := bufio.NewScanner(logFile)
 	scanner.Scan()
+	ignoreLines := 0
 	if scanner.Text() == header {
-		if err := os.Remove(tempFileName); err != nil {
-			return err
+		if override {
+			for scanner.Scan() {
+				ignoreLines++
+				if scanner.Text() == ENTRY_SEPARATOR {
+					ignoreLines++
+					break
+				}
+			}
+		} else {
+			if err := os.Remove(tempFileName); err != nil {
+				return err
+			}
+			return fmt.Errorf("A schloss entry with the previous commit already exists. Use --override-log to override it")
 		}
-		return fmt.Errorf("A schloss entry with the previous commit already exists")
 	}
-	logFile.Seek(0,0)
+	logFile.Seek(0, 0)
 	for scanner.Scan() {
-		if _, err := tempFile.WriteString(fmt.Sprintf("%s\n", scanner.Text())); err != nil {
-			return err
+		if ignoreLines == 0 {
+			if _, err := tempFile.WriteString(fmt.Sprintf("%s\n", scanner.Text())); err != nil {
+				return err
+			}
+		} else {
+			ignoreLines--
 		}
 	}
 	if err := scanner.Err(); err != nil {
