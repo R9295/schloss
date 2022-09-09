@@ -12,14 +12,19 @@ import (
 )
 
 func getRandomName() string {
-	return strings.Replace(fmt.Sprintf("%s-%s", gofakeit.HipsterWord(), gofakeit.Animal()), " ", "-", -1)
+	return strings.Replace(
+		fmt.Sprintf("%s-%s", gofakeit.HipsterWord(), gofakeit.Animal()),
+		" ",
+		"-",
+		-1,
+	)
 }
 
 func getRandLockfilePkg() LockfilePackage {
 	pkg := LockfilePackage{
 		Name:         getRandomName(),
 		Version:      gofakeit.AppVersion(),
-		Checksum:	  gofakeit.Regex("[a-zA-Z0-9]{64}"),
+		Checksum:     gofakeit.Regex("[a-zA-Z0-9]{64}"),
 		Source:       gofakeit.URL(),
 		Dependencies: []string{},
 	}
@@ -71,7 +76,11 @@ func TestDiffPackagesAddPackage(t *testing.T) {
 	var diffList []core.Diff
 	DiffLockfiles(&oldLockfile, &newLockfile, &diffList, "rootPkg")
 	assert.Equal(t, len(diffList), 1)
-	assert.Equal(t, diffList[0], core.MakeAddedDependencyDiff(pkgTwo.Name, pkgTwo.Version, "rootPkg"))
+	assert.Equal(
+		t,
+		diffList[0],
+		core.MakeAddedDependencyDiff(pkgTwo.Name, pkgTwo.Version, "rootPkg"),
+	)
 }
 
 func TestDiffPackagesPackageVersion(t *testing.T) {
@@ -139,12 +148,12 @@ func TestDiffPackagesSubDependencyRemove(t *testing.T) {
 	oldPkg := getRandLockfilePkg()
 	oldPkg.Dependencies = append(oldPkg.Dependencies, "to-remove")
 	newPkg := oldPkg
-	newPkg.Dependencies = newPkg.Dependencies[:len(newPkg.Dependencies) -1]
+	newPkg.Dependencies = newPkg.Dependencies[:len(newPkg.Dependencies)-1]
 	var diffList []core.Diff
 	diffPackages(&oldPkg, &newPkg, &diffList)
 	assert.Equal(t, len(diffList), 1)
 	assert.Equal(t, diffList[0], core.MakeRemovedSubDependencyDiff(
-		oldPkg.Dependencies[len(oldPkg.Dependencies) -1],
+		oldPkg.Dependencies[len(oldPkg.Dependencies)-1],
 		oldPkg.Name,
 	))
 }
