@@ -80,21 +80,29 @@ func diffPackages(oldPkg *LockfilePackage, newPkg *LockfilePackage, diffList *[]
 				newPkg.Version),
 		)
 	}
-	if oldPkg.Checksum != newPkg.Checksum {
-		*diffList = append(*diffList,
-			core.MakeDependencyFieldDiff(newPkg.Name,
-				"checksum",
-				oldPkg.Checksum,
-				newPkg.Checksum),
-		)
+	if newPkg.Checksum == "" {
+		*diffList = append(*diffList, core.MakeAbsentFieldDiff(newPkg.Name, "checksum"))
+	} else {
+		if oldPkg.Checksum != newPkg.Checksum {
+			*diffList = append(*diffList,
+				core.MakeDependencyFieldDiff(newPkg.Name,
+					"checksum",
+					oldPkg.Checksum,
+					newPkg.Checksum),
+			)
+		}
 	}
-	if oldPkg.Source != newPkg.Source {
-		*diffList = append(*diffList,
-			core.MakeDependencyFieldDiff(newPkg.Name,
-				"source",
-				oldPkg.Source,
-				newPkg.Source),
-		)
+	if newPkg.Source == "" {
+		*diffList = append(*diffList, core.MakeAbsentFieldDiff(newPkg.Name, "source"))
+	} else {
+		if oldPkg.Source != newPkg.Source {
+			*diffList = append(*diffList,
+				core.MakeDependencyFieldDiff(newPkg.Name,
+					"source",
+					oldPkg.Source,
+					newPkg.Source),
+			)
+		}
 	}
 	for _, dependency := range oldPkg.Dependencies {
 		if doesSubdependencyExist(newPkg.Dependencies, dependency) == false {

@@ -254,3 +254,31 @@ func TestNoDuplicateModifiedSubDependencyWhenRemoving(t *testing.T) {
 		},
 		diffList)
 }
+
+func TestDiffPackagesAbsentFieldChecksum(t *testing.T) {
+	oldPkg := getRandLockfilePkg()
+	newPkg := oldPkg
+	newPkg.Checksum = ""
+	var diffList []core.Diff
+	diffPackages(&oldPkg, &newPkg, &diffList)
+	assert.Equal(t, len(diffList), 1)
+	assert.Equal(t, diffList[0],
+		core.MakeAbsentFieldDiff(
+			oldPkg.Name,
+			"checksum",
+		))
+}
+
+func TestDiffPackagesAbsentFieldSource(t *testing.T) {
+	oldPkg := getRandLockfilePkg()
+	newPkg := oldPkg
+	newPkg.Source = ""
+	var diffList []core.Diff
+	diffPackages(&oldPkg, &newPkg, &diffList)
+	assert.Equal(t, len(diffList), 1)
+	assert.Equal(t, diffList[0],
+		core.MakeAbsentFieldDiff(
+			oldPkg.Name,
+			"source",
+		))
+}

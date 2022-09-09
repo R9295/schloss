@@ -15,6 +15,7 @@ type DiffMetaType string
 const (
 	DEPENDENCY     DiffMetaType = "dependency"
 	SUB_DEPENDENCY DiffMetaType = "sub-dependency"
+	FIELD          DiffMetaType = "field"
 )
 
 type Diff interface {
@@ -74,6 +75,25 @@ func (diff FieldDiff) GetType() DiffType {
 }
 
 func (diff FieldDiff) GetName() string {
+	return diff.Name
+}
+
+type AbsentFieldDiff struct {
+	Type     DiffType     `json:"type"`
+	MetaType DiffMetaType `json:"meta_type"`
+	Name     string       `json:"dependency_name"`
+	Field    string       `json:"field"`
+}
+
+func (diff AbsentFieldDiff) RenderHumanReadable() string {
+	return fmt.Sprintf("%s %s %s of %s", diff.Type, diff.MetaType, diff.Field, diff.Name)
+}
+
+func (diff AbsentFieldDiff) GetType() DiffType {
+	return diff.Type
+}
+
+func (diff AbsentFieldDiff) GetName() string {
 	return diff.Name
 }
 
@@ -137,5 +157,14 @@ func MakeAddedSubDependencyDiff(pkgName string, parent string, version string) D
 		Name:     pkgName,
 		Parent:   parent,
 		Version:  version,
+	}
+}
+
+func MakeAbsentFieldDiff(pkgName string, field string) AbsentFieldDiff {
+	return AbsentFieldDiff{
+		Type:     REMOVED,
+		MetaType: FIELD,
+		Name:     pkgName,
+		Field:    field,
 	}
 }
