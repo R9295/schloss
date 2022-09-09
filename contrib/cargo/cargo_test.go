@@ -11,8 +11,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// TODO make packages realistic
-
 func getRandomName() string {
 	return strings.Replace(fmt.Sprintf("%s-%s", gofakeit.HipsterWord(), gofakeit.Animal()), " ", "-", -1)
 }
@@ -31,8 +29,6 @@ func getRandLockfilePkg() LockfilePackage {
 	}
 	return pkg
 }
-
-
 
 func TestPoetryCollectPackage(t *testing.T) {
 	pkgOne := getRandLockfilePkg()
