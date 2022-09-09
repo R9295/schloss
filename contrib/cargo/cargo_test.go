@@ -164,44 +164,31 @@ func TestNoDuplicateModifiedSubDependencyWhenAdding(t *testing.T) {
 		if the sub-dependency is modified(eg. version bump), make sure the modification diff
 		is only for the existing pkg and not for the added.
 	*/
+	pkgOne := getRandLockfilePkg()
+	pkgTwo := getRandLockfilePkg()
+	pkgOne.Version = "0.1"
+	pkgTwo.Dependencies = append(pkgTwo.Dependencies, pkgOne.Name)
 	oldLockfile := Lockfile{Package: []LockfilePackage{
-		{
-			Name:         "sub_dep",
-			Version:      "0.1",
-			Dependencies: []string{},
-		},
-		{
-			Name:         "tokio",
-			Version:      "42.0",
-			Dependencies: []string{"sub_dep"},
-		},
+		pkgOne,
+		pkgTwo,
 	}}
+	pkgOne.Version = "0.2"
+	pkgThree := getRandLockfilePkg()
+	pkgThree.Dependencies = append(pkgThree.Dependencies, pkgOne.Name)
 	newLockfile := Lockfile{Package: []LockfilePackage{
-		{
-			Name:         "sub_dep",
-			Version:      "0.2",
-			Dependencies: []string{},
-		},
-		{
-			Name:         "tokio",
-			Version:      "42.0",
-			Dependencies: []string{"sub_dep"},
-		},
-		{
-			Name:         "deno_core",
-			Version:      "42.0",
-			Dependencies: []string{"sub_dep"},
-		},
+		pkgOne,
+		pkgTwo,
+		pkgThree,
 	},
 	}
 	var diffList []core.Diff
 	DiffLockfiles(&oldLockfile, &newLockfile, &diffList, "rootPkg")
 	assert.Equal(t, len(diffList), 3)
-	assert.Equal(
+	assert.ElementsMatch(
 		t, []core.Diff{
-			core.MakeDependencyFieldDiff("sub_dep", "version", "0.1", "0.2"),
-			core.MakeAddedDependencyDiff("deno_core", "42.0", "rootPkg"),
-			core.MakeModifiedSubDependencyDiff("sub_dep", "tokio"),
+			core.MakeDependencyFieldDiff(pkgOne.Name, "version", "0.1", "0.2"),
+			core.MakeAddedDependencyDiff(pkgThree.Name, pkgThree.Version, "rootPkg"),
+			core.MakeModifiedSubDependencyDiff(pkgOne.Name, pkgTwo.Name),
 		},
 		diffList)
 }
@@ -212,45 +199,32 @@ func TestNoDuplicateModifiedSubDependencyWhenRemoving(t *testing.T) {
 		if the sub-dependency is modified(eg. version bump), make sure the modification diff
 		is only for the existing pkg and not for the removed.
 	*/
+	pkgOne := getRandLockfilePkg()
+	pkgTwo := getRandLockfilePkg()
+	pkgThree := getRandLockfilePkg()
+	pkgTwo.Dependencies = append(pkgTwo.Dependencies, pkgOne.Name)
+	pkgThree.Dependencies = append(pkgTwo.Dependencies, pkgOne.Name)
+	pkgOne.Version = "0.2"
 	oldLockfile := Lockfile{Package: []LockfilePackage{
-		{
-			Name:         "sub_dep",
-			Version:      "0.2",
-			Dependencies: []string{},
-		},
-		{
-			Name:         "tokio",
-			Version:      "42.0",
-			Dependencies: []string{"sub_dep"},
-		},
-		{
-			Name:         "deno_core",
-			Version:      "42.0",
-			Dependencies: []string{"sub_dep"},
-		},
+		pkgOne,
+		pkgTwo,
+		pkgThree,
 	},
 	}
+	pkgOne.Version = "0.1"
 	newLockfile := Lockfile{Package: []LockfilePackage{
-		{
-			Name:         "sub_dep",
-			Version:      "0.1",
-			Dependencies: []string{},
-		},
-		{
-			Name:         "tokio",
-			Version:      "42.0",
-			Dependencies: []string{"sub_dep"},
-		},
+		pkgOne,
+		pkgTwo,
 	}}
 	var diffList []core.Diff
 	DiffLockfiles(&oldLockfile, &newLockfile, &diffList, "rootPkg")
 	fmt.Println(diffList)
 	assert.Equal(t, len(diffList), 3)
-	assert.Equal(
+	assert.ElementsMatch(
 		t, []core.Diff{
-			core.MakeDependencyFieldDiff("sub_dep", "version", "0.2", "0.1"),
-			core.MakeRemovedDependencyDiff("deno_core"),
-			core.MakeModifiedSubDependencyDiff("sub_dep", "tokio"),
+			core.MakeDependencyFieldDiff(pkgOne.Name, "version", "0.2", "0.1"),
+			core.MakeRemovedDependencyDiff(pkgThree.Name),
+			core.MakeModifiedSubDependencyDiff(pkgOne.Name, pkgTwo.Name),
 		},
 		diffList)
 }

@@ -137,98 +137,60 @@ func TestDiffPackagesPackageAddSubDependency(t *testing.T) {
 }
 
 func TestNoDuplicateModifiedSubDependencyWhenAdding(t *testing.T) {
+	pkgOne := getRandLockfilePkg()
+	pkgOne.Version = "0.1"
+	pkgTwo := getRandLockfilePkg()
+	pkgTwo.Dependencies[pkgOne.Name] = "0.1"
 	oldLockfile := Lockfile{Package: []LockfilePackage{
-		{
-			Name:         "sub_dep",
-			Version:      "0.1",
-			Dependencies: map[string]interface{}{},
-		},
-		{
-			Name:    "jinja2",
-			Version: "42.0",
-			Dependencies: map[string]interface{}{
-				"sub_dep": "",
-			},
-		},
+		pkgOne,
+		pkgTwo,
 	}}
+	pkgThree := getRandLockfilePkg()
+	pkgThree.Dependencies[pkgOne.Name] = "0.1"
+	pkgOne.Version = "0.2"
 	newLockfile := Lockfile{Package: []LockfilePackage{
-		{
-			Name:         "sub_dep",
-			Version:      "0.2",
-			Dependencies: map[string]interface{}{},
-		},
-		{
-			Name:    "jinja2",
-			Version: "42.0",
-			Dependencies: map[string]interface{}{
-				"sub_dep": "",
-			},
-		},
-		{
-			Name:    "black",
-			Version: "22.6.0",
-			Dependencies: map[string]interface{}{
-				"sub_dep": "",
-			},
-		},
+		pkgOne,
+		pkgTwo,
+		pkgThree,
 	}}
 	var diffList []core.Diff
 	DiffLockfiles(&oldLockfile, &newLockfile, &diffList, "rootPkg")
 	assert.Equal(t, len(diffList), 3)
-	assert.Equal(
+	assert.ElementsMatch(
 		t, []core.Diff{
-			core.MakeDependencyFieldDiff("sub_dep", "version", "0.1", "0.2"),
-			core.MakeAddedDependencyDiff("black", "22.6.0", "rootPkg"),
-			core.MakeModifiedSubDependencyDiff("sub_dep", "jinja2"),
+			core.MakeDependencyFieldDiff(pkgOne.Name, "version", "0.1", "0.2"),
+			core.MakeAddedDependencyDiff(pkgThree.Name, pkgThree.Version, "rootPkg"),
+			core.MakeModifiedSubDependencyDiff(pkgOne.Name, pkgTwo.Name),
 		},
 		diffList)
 }
 
 func TestNoDuplicateModifiedSubDependencyWhenRemoving(t *testing.T) {
+	pkgOne := getRandLockfilePkg()
+	pkgTwo := getRandLockfilePkg()
+	pkgThree := getRandLockfilePkg()
+	pkgTwo.Dependencies[pkgOne.Name] = "0.2"
+	pkgThree.Dependencies[pkgOne.Name] = "0.2"
+	pkgOne.Version = "0.2"
 	oldLockfile := Lockfile{Package: []LockfilePackage{
-		{
-			Name:         "sub_dep",
-			Version:      "0.2",
-			Dependencies: map[string]interface{}{},
-		},
-		{
-			Name:    "jinja2",
-			Version: "42.0",
-			Dependencies: map[string]interface{}{
-				"sub_dep": "",
-			},
-		},
-		{
-			Name:    "black",
-			Version: "22.6.0",
-			Dependencies: map[string]interface{}{
-				"sub_dep": "",
-			},
-		},
+		pkgOne,
+		pkgTwo,
+		pkgThree,
 	}}
+	pkgOne.Version = "0.1"
 	newLockfile := Lockfile{Package: []LockfilePackage{
-		{
-			Name:         "sub_dep",
-			Version:      "0.1",
-			Dependencies: map[string]interface{}{},
-		},
-		{
-			Name:    "jinja2",
-			Version: "42.0",
-			Dependencies: map[string]interface{}{
-				"sub_dep": "",
-			},
-		},
+		pkgOne,
+		pkgTwo,
 	}}
 
 	var diffList []core.Diff
 	DiffLockfiles(&oldLockfile, &newLockfile, &diffList, "rootPkg")
 	assert.Equal(t, len(diffList), 3)
-	assert.Equal(
+	assert.ElementsMatch(
 		t, []core.Diff{
-			core.MakeDependencyFieldDiff("sub_dep", "version", "0.2", "0.1"),
-			core.MakeRemovedDependencyDiff("black"),
-			core.MakeModifiedSubDependencyDiff("sub_dep", "jinja2"),
+			core.MakeDependencyFieldDiff(pkgOne.Name, "version", "0.2", "0.1"),
+			core.MakeRemovedDependencyDiff(pkgThree.Name),
+			core.MakeModifiedSubDependencyDiff(pkgOne.Name, pkgTwo.Name),
 		},
 		diffList)
 }
