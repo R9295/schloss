@@ -2,105 +2,92 @@ package cargo
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/R9295/schloss/core"
+	"github.com/brianvoe/gofakeit/v6"
 
 	"github.com/stretchr/testify/assert"
 )
 
 // TODO make packages realistic
 
+func getRandomName() string {
+	return strings.Replace(fmt.Sprintf("%s-%s", gofakeit.HipsterWord(), gofakeit.Animal()), " ", "-", -1)
+}
+
+func getRandLockfilePkg() LockfilePackage {
+	pkg := LockfilePackage{
+		Name:         getRandomName(),
+		Version:      gofakeit.AppVersion(),
+		Checksum:	  gofakeit.Regex("[a-zA-Z0-9]{64}"),
+		Source:       gofakeit.URL(),
+		Dependencies: []string{},
+	}
+	depsAmount := gofakeit.IntRange(0, 15)
+	for i := 0; i < depsAmount; i++ {
+		pkg.Dependencies = append(pkg.Dependencies, getRandomName())
+	}
+	return pkg
+}
+
+
+
 func TestPoetryCollectPackage(t *testing.T) {
+	pkgOne := getRandLockfilePkg()
+	pkgTwo := getRandLockfilePkg()
 	pkgs := []LockfilePackage{
-		{
-			Name:         "parserkiosk",
-			Version:      "0.3.0",
-			Dependencies: []string{"deno_core", "deno_runtime"},
-		},
-		{
-			Name:         "deno_core",
-			Version:      "22.6.0",
-			Dependencies: []string{"tokio"},
-		},
+		pkgOne,
+		pkgTwo,
 	}
 	collectedPkgs, _ := collectPackages(pkgs)
-	assert.Equal(t, pkgs[0], collectedPkgs["parserkiosk"])
-	assert.Equal(t, pkgs[1], collectedPkgs["deno_core"])
+	assert.Equal(t, pkgs[0], collectedPkgs[pkgOne.Name])
+	assert.Equal(t, pkgs[1], collectedPkgs[pkgTwo.Name])
 }
 
 func TestDiffPackagesRemovePackage(t *testing.T) {
+	pkgOne := getRandLockfilePkg()
+	pkgTwo := getRandLockfilePkg()
 	oldLockfile := Lockfile{Package: []LockfilePackage{
-		{
-			Name:         "tokio",
-			Version:      "42.0",
-			Dependencies: []string{},
-		},
-		{
-			Name:         "deno_core",
-			Version:      "22.6.0",
-			Dependencies: []string{},
-		},
+		pkgOne,
+		pkgTwo,
 	}}
 	newLockfile := Lockfile{Package: []LockfilePackage{
-		{
-			Name:         "tokio",
-			Version:      "42.0",
-			Dependencies: []string{},
-		},
+		pkgOne,
 	}}
 	var diffList []core.Diff
 	DiffLockfiles(&oldLockfile, &newLockfile, &diffList, "rootPkg")
 	assert.Equal(t, len(diffList), 1)
-	assert.Equal(t, diffList[0], core.MakeRemovedDependencyDiff("deno_core"))
+	assert.Equal(t, diffList[0], core.MakeRemovedDependencyDiff(pkgTwo.Name))
 }
 
 func TestDiffPackagesAddPackage(t *testing.T) {
+	pkgOne := getRandLockfilePkg()
+	pkgTwo := getRandLockfilePkg()
 	oldLockfile := Lockfile{Package: []LockfilePackage{
-		{
-			Name:         "tokio",
-			Version:      "42.0",
-			Dependencies: []string{},
-		},
+		pkgOne,
 	}}
 	newLockfile := Lockfile{Package: []LockfilePackage{
-		{
-			Name:         "deno_core",
-			Version:      "42.0",
-			Dependencies: []string{},
-		},
-		{
-			Name:         "tokio",
-			Version:      "42.0",
-			Dependencies: []string{},
-		},
+		pkgOne,
+		pkgTwo,
 	}}
 	var diffList []core.Diff
 	DiffLockfiles(&oldLockfile, &newLockfile, &diffList, "rootPkg")
 	assert.Equal(t, len(diffList), 1)
-	assert.Equal(t, diffList[0], core.MakeAddedDependencyDiff("deno_core", "42.0", "rootPkg"))
+	assert.Equal(t, diffList[0], core.MakeAddedDependencyDiff(pkgTwo.Name, pkgTwo.Version, "rootPkg"))
 }
 
 func TestDiffPackagesPackageVersion(t *testing.T) {
-	oldPkg := LockfilePackage{
-		Name:     "parserkiosk",
-		Version:  "0.3.0",
-		Source:   "registry+https://github.com/rust-lang/crates.io-index",
-		Checksum: "7a8325f63a7d4774dd041e363b2409ed1c5cbbd0f867795e661df066b2b0a581",
-	}
-
-	newPkg := LockfilePackage{
-		Name:     "parserkiosk",
-		Version:  "0.3.1",
-		Source:   "registry+https://github.com/rust-lang/crates.io-index",
-		Checksum: "7a8325f63a7d4774dd041e363b2409ed1c5cbbd0f867795e661df066b2b0a581",
-	}
+	oldPkg := getRandLockfilePkg()
+	newPkg := oldPkg
+	newPkg.Version = "666.666"
 	var diffList []core.Diff
 	diffPackages(&oldPkg, &newPkg, &diffList)
 	assert.Equal(t, len(diffList), 1)
 	assert.Equal(t, diffList[0],
 		core.MakeDependencyFieldDiff(
-			"parserkiosk",
+			oldPkg.Name,
 			"version",
 			oldPkg.Version,
 			newPkg.Version,
@@ -108,25 +95,15 @@ func TestDiffPackagesPackageVersion(t *testing.T) {
 }
 
 func TestDiffPackagesPackageSouce(t *testing.T) {
-	oldPkg := LockfilePackage{
-		Name:     "parserkiosk",
-		Version:  "0.3.0",
-		Source:   "registry+https://github.com/rust-lang/crates.io-index",
-		Checksum: "7a8325f63a7d4774dd041e363b2409ed1c5cbbd0f867795e661df066b2b0a581",
-	}
-
-	newPkg := LockfilePackage{
-		Name:     "parserkiosk",
-		Version:  "0.3.0",
-		Source:   "registry+https://githubb.com/rust-lang/crates.io-index",
-		Checksum: "7a8325f63a7d4774dd041e363b2409ed1c5cbbd0f867795e661df066b2b0a581",
-	}
+	oldPkg := getRandLockfilePkg()
+	newPkg := oldPkg
+	newPkg.Source = gofakeit.URL()
 	var diffList []core.Diff
 	diffPackages(&oldPkg, &newPkg, &diffList)
 	assert.Equal(t, len(diffList), 1)
 	assert.Equal(t, diffList[0],
 		core.MakeDependencyFieldDiff(
-			"parserkiosk",
+			oldPkg.Name,
 			"source",
 			oldPkg.Source,
 			newPkg.Source,
@@ -134,24 +111,14 @@ func TestDiffPackagesPackageSouce(t *testing.T) {
 }
 
 func TestDiffPackagesPackageChecksum(t *testing.T) {
-	oldPkg := LockfilePackage{
-		Name:     "parserkiosk",
-		Version:  "0.3.0",
-		Source:   "registry+https://github.com/rust-lang/crates.io-index",
-		Checksum: "Aa8325f63a7d4774dd041e363b2409ed1c5cbbd0f867795e661df066b2b0a581",
-	}
-
-	newPkg := LockfilePackage{
-		Name:     "parserkiosk",
-		Version:  "0.3.0",
-		Source:   "registry+https://github.com/rust-lang/crates.io-index",
-		Checksum: "7a8325f63a7d4774dd041e363b2409ed1c5cbbd0f867795e661df066b2b0a581",
-	}
+	oldPkg := getRandLockfilePkg()
+	newPkg := oldPkg
+	newPkg.Checksum = "NEW_CHECKSUM"
 	var diffList []core.Diff
 	diffPackages(&oldPkg, &newPkg, &diffList)
 	assert.Equal(t, len(diffList), 1)
 	assert.Equal(t, diffList[0], core.MakeDependencyFieldDiff(
-		"parserkiosk",
+		oldPkg.Name,
 		"checksum",
 		oldPkg.Checksum,
 		newPkg.Checksum,
@@ -159,51 +126,30 @@ func TestDiffPackagesPackageChecksum(t *testing.T) {
 }
 
 func TestDiffPackagesSubDependencyAdd(t *testing.T) {
-	oldPkg := LockfilePackage{
-		Name:         "parserkiosk",
-		Version:      "0.3.0",
-		Source:       "registry+https://github.com/rust-lang/crates.io-index",
-		Checksum:     "Aa8325f63a7d4774dd041e363b2409ed1c5cbbd0f867795e661df066b2b0a581",
-		Dependencies: []string{"something"},
-	}
-	newPkg := LockfilePackage{
-		Name:         "parserkiosk",
-		Version:      "0.3.0",
-		Source:       "registry+https://github.com/rust-lang/crates.io-index",
-		Checksum:     "Aa8325f63a7d4774dd041e363b2409ed1c5cbbd0f867795e661df066b2b0a581",
-		Dependencies: []string{"something", "new"},
-	}
+	oldPkg := getRandLockfilePkg()
+	newPkg := oldPkg
+	newPkg.Dependencies = append(newPkg.Dependencies, "new-sub-depdendency")
 	var diffList []core.Diff
 	diffPackages(&oldPkg, &newPkg, &diffList)
 	assert.Equal(t, len(diffList), 1)
 	assert.Equal(t, diffList[0], core.MakeAddedSubDependencyDiff(
-		"new",
-		"parserkiosk",
+		"new-sub-depdendency",
+		oldPkg.Name,
 		"",
 	))
 }
 
 func TestDiffPackagesSubDependencyRemove(t *testing.T) {
-	oldPkg := LockfilePackage{
-		Name:         "parserkiosk",
-		Version:      "0.3.0",
-		Source:       "registry+https://github.com/rust-lang/crates.io-index",
-		Checksum:     "Aa8325f63a7d4774dd041e363b2409ed1c5cbbd0f867795e661df066b2b0a581",
-		Dependencies: []string{"something", "remove"},
-	}
-	newPkg := LockfilePackage{
-		Name:         "parserkiosk",
-		Version:      "0.3.0",
-		Source:       "registry+https://github.com/rust-lang/crates.io-index",
-		Checksum:     "Aa8325f63a7d4774dd041e363b2409ed1c5cbbd0f867795e661df066b2b0a581",
-		Dependencies: []string{"something"},
-	}
+	oldPkg := getRandLockfilePkg()
+	oldPkg.Dependencies = append(oldPkg.Dependencies, "to-remove")
+	newPkg := oldPkg
+	newPkg.Dependencies = newPkg.Dependencies[:len(newPkg.Dependencies) -1]
 	var diffList []core.Diff
 	diffPackages(&oldPkg, &newPkg, &diffList)
 	assert.Equal(t, len(diffList), 1)
 	assert.Equal(t, diffList[0], core.MakeRemovedSubDependencyDiff(
-		"remove",
-		"parserkiosk",
+		oldPkg.Dependencies[len(oldPkg.Dependencies) -1],
+		oldPkg.Name,
 	))
 }
 

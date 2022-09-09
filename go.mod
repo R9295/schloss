@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	github.com/BurntSushi/toml v1.2.0
+	github.com/brianvoe/gofakeit/v6 v6.18.0
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/stretchr/testify v1.5.1
 	github.com/waigani/diffparser v0.0.0-20190828052634-7391f219313d
