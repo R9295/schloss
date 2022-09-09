@@ -8,7 +8,7 @@ import (
 func RenderHumanReadable(diffList *[]Diff) string {
 	var text string
 	for index, item := range *diffList {
-		text = fmt.Sprintf("%s\n%d.%s", text, index+1, item.RenderHumanReadable())
+		text = fmt.Sprintf("%s\n%d. %s", text, index+1, item.RenderHumanReadable())
 	}
 	return text
 }
