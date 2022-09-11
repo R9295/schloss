@@ -13,7 +13,7 @@ import (
 	"github.com/waigani/diffparser"
 )
 
-var opts struct {
+var args struct {
 	LockfileType    string `short:"t" long:"type" description:"Type of lockfile" required:"true"`
 	IgnoreUntracked bool   `long:"ignore-untracked" description:"Ignore Untracked Log Files"`
 	Format          string `short:"f" long:"fmt" default:"human" description:"Format of output, options: json, human."`
@@ -24,19 +24,19 @@ var opts struct {
 }
 
 func run() error {
-	_, err := flags.Parse(&opts)
+	_, err := flags.Parse(&args)
 	if err != nil {
 		return nil
 	}
-	lockfileType, err := core.GetLockfileType(opts.LockfileType)
+	lockfileType, err := core.GetLockfileType(args.LockfileType)
 	if err != nil {
 		return err
 	}
 	fmt.Println("----------------------------------------------------------------------")
-	fmt.Printf("Running schloss for type: %s\n", opts.LockfileType)
+	fmt.Printf("Running schloss for type: %s\n", args.LockfileType)
 	fmt.Println("----------------------------------------------------------------------")
 	start := time.Now()
-	if !opts.IgnoreUntracked {
+	if !args.IgnoreUntracked {
 		untrackedLockfiles, amount, err := core.CheckUntrackedFiles(lockfileType.FileName)
 		if err != nil {
 			return err
@@ -52,8 +52,7 @@ func run() error {
 			return nil
 		}
 	}
-	commitAmount := opts.CommitAmount
-	gitDiff, err := core.GetAllDiff(commitAmount)
+	gitDiff, err := core.GetAllDiff(args.CommitAmount)
 	if err != nil {
 		return err
 	}
@@ -65,7 +64,7 @@ func run() error {
 	for _, file := range parsedDiff.Files {
 		if lockfileRegex.MatchString(file.NewName) && file.Mode == diffparser.MODIFIED {
 			fmt.Printf("Lockfile %s modified\n", file.NewName)
-			lockfileDiff, err := core.GetSingleDiff(file.NewName, commitAmount)
+			lockfileDiff, err := core.GetSingleDiff(file.NewName, args.CommitAmount)
 			if err != nil {
 				return err
 			}
@@ -80,7 +79,7 @@ func run() error {
 				return err
 			}
 			var diffList []core.Diff
-			if opts.LockfileType == "poetry" {
+			if args.LockfileType == "poetry" {
 				if err := poetry.Diff(&rootFile, &oldLockfile, &newLockfile, &diffList); err != nil {
 					return err
 				}
@@ -90,7 +89,7 @@ func run() error {
 				}
 			}
 			var rendered string
-			if opts.Format == "json" {
+			if args.Format == "json" {
 				rendered, err = core.RenderJSON(&diffList)
 				if err != nil {
 					return err
@@ -98,8 +97,8 @@ func run() error {
 			} else {
 				rendered = core.RenderHumanReadable(&diffList)
 			}
-			if opts.Log {
-				if err := core.Log(opts.LogFile, rendered, opts.OverrideLog); err != nil {
+			if args.Log {
+				if err := core.Log(args.LogFile, rendered, args.OverrideLog); err != nil {
 					return err
 				}
 			}
