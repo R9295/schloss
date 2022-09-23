@@ -64,7 +64,8 @@
  - `resolved + integrity`
  
  - changing url and using valid integrity/no integrity is possible. 
- - url points to different package:
+ 
+ - Sample - url points to different package:
    ````
    corepack@^0.14.1:
    version "0.14.1"
