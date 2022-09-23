@@ -60,7 +60,6 @@ func ParseLockfile(lockfile *string) (Lockfile, error) {
 					secondLineName,
 				)
 			} else if secondLineVersion != fmt.Sprintf("%s/go.mod", version) {
-
 				return parsedLockfile, fmt.Errorf(
 					"Invalid go.mod entry on line %d. Expected %s got %s",
 					i+2,
