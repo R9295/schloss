@@ -4,117 +4,54 @@
   Version: 1
 
 ## Allows ommited fields
-   Yes, allowsfollowing omitted fields:
-   
- - `integrity`
- 
- - when running yarn,  integrity not added to yarn.lock file
- 
- - `resolved`
 
- -  when running yarn,  resolved added to yarn.lock file
+   Yes, `integrity` and `resolved`
+
    ````
    corepack@^0.14.1:
    version "0.14.1"
-   resolved  #allows omission
-   integrity #allows omission
+   resolved  # allows omission
+   integrity # allows omission
    ````
+  Note: In case of omission of ``resolved`` and ``integrity``, running yarn will NOT populate ``integrity`` but will populate``resolved``.
 
-## Allows modified fields
-
- - `version`
- 
- - Changing version of package, causes warning, but it's ignored:
-   ````
-   corepack@^0.14.1:
-   version "0.13.1" #different version
-   resolved "https://registry.yarnpkg.com/corepack/-/corepack-0.14.1.tgz#c0a4a3e2cf972a6320ad459bd3a1b55650f35b55"
-   integrity sha512-vTxmM8ktrK0OR4qZskfCrjiybCRoLBZrx/UVO3srXnkJK3Kf7/D+DU2ZH2kqrev5NAKEbBivTydzWYdF08KrQg==
-   ````
- - running yarn:
-   ````
-   warning Lockfile has incorrect entry for "corepack@^0.14.1". Ignoring it.
-   ````
- - original version is installed and yarn.lock updateded correctly
-  
- - `integrity`
- 
- - modifying integrity hash resolves in the following error:
-   ````
-   error Incorrect integrity when fetching from the cache for "corepack". Cache has "sha512-vTxmM8ktrK0OR4qZskfCrjiybCRoLBZrx/UVO3srXnkJK3Kf7 
-   /D+DU2ZH2kqrev5NAKEbBivTydzWYdF08KrQg== sha1-wKSj4s+XKmMgrUWb06G1VlDzW1U=" and remote has "sha512-vTxmM8ktrK0OsdadR4qZskfCrjiybCRoLBZrx/UVO3srXnkJK3Kf7
-   /D+DU2ZH2kqrev5NAKEbBivTydzWYdF08KrQg==". Run `yarn cache clean` to fix the problem
-   ````
- - after cleaning cache:
-   ````
-   error https://registry.yarnpkg.com/corepack/-/corepack-0.14.1.tgz: Integrity check failed for "corepack" (computed integrity doesn't match our records,got 
-   "sha512-vTxmM8ktrK0OR4qZskfCrjiybCRoLBZrx/UVO3srXnkJK3Kf7/D+DU2ZH2kqrev5NAKEbBivTydzWYdF08KrQg== sha1-wKSj4s+XKmMgrUWb06G1VlDzW1U=")
-   ````                                                                                  
- - package is not installed 
-  
- - `resolved`
- 
- - url change needs valid integrity or no integrity 
-   ````
-   corepack@^0.14.1:
-   version "0.14.1"
-   resolved "https://malicious.url
-   ````
-
- - `resolved + integrity`
- 
- - changing url and using valid integrity/no integrity is possible. 
- 
- - Sample - url points to different package:
-   ````
-   corepack@^0.14.1:
-   version "0.14.1"
-   resolved "https://registry.yarnpkg.com/dummy-pkg/-/dummy-pkg-0.0.1.tgz#a30fed3bfbc23db526fe9cec888548bd5ee180a8" #dummy-pkg
-   integrity sha512-5LX4qKqvkd3R8noMWqDDy4VQpeM2uJU1OdFDjQhK1S9QB3V2vtjn3FUr8XCiP3zY6zqfFF3uWExed4DPIg81Iw== #dummy-pkg hash
-   ````
- - running yarn will turn no errors and dummy-pkg package is installed under corepack package!!
-   
 ## Duplicated field handling  
-  
- - `version` `resolved`
- 
- - duplicated fields are ignored, the original correct version gets installed and yarn.lock file updated with correct data. 
-   ````
+  Yarn has a duplicate field issue for fields ``resolved`` and ``integrity``, but not for ``version``.
+```
    corepack@^0.14.1:
    version "0.14.1"
-   version "0.13.1" #duplicate field
-   resolved "https://registry.yarnpkg.com/corepack/-/corepack-0.14.1.tgz#c0a4a3e2cf972a6320ad459bd3a1b55650f35b55"
-   integrity sha512-vTxmM8ktrK0OR4qZskfCrjiybCRoLBZrx/UVO3srXnkJK3Kf7/D+DU2ZH2kqrev5NAKEbBivTydzWYdF08KrQg==
-   ````
- - `integrity`
- 
- - duplicate key precedence issue
-   ````
-   corepack@^0.14.1:
-   version "0.14.1"
-   resolved "https://registry.yarnpkg.com/corepack/-/corepack-0.14.1.tgz#c0a4a3e2cf972a6320ad459bd3a1b55650f35b55"
-   integrity sha512-vTxmM8ktrK0OR4qZskfCrjiybCRoLBZrx/UVO3srXnkJK3Kf7/D+DU2ZH2kqrev5NAKEbBivTydzWYdF08KrQg==
-   integrity sha512-5LX4qKqvkd3R8noMWqDDy4VQpeM2uJU1OdFDjQhK1S9QB3V2vtjn3FUr8XCiP3zY6zqfFF3uWExed4DPIg81Iw== #duplicate 
-   ````
-  - results:
-   ````
-   Incorrect integrity when fetching from the cache for "corepack". Cache has "sha512-vTxmM8ktrK0OR4qZskfCrjiybCRoLBZrx/UVO3srXnkJK3Kf7/
-   D+DU2ZH2kqrev5NAKEbBivTydzWYdF08KrQg== sha1-wKSj4s+XKmMgrUWb06G1VlDzW1U=" and remote has
-   "sha512-5LX4qKqvkd3R8noMWqDDy4VQpeM2uJU1OdFDjQhK1S9QB3V2vtjn3FUr8XCiP3zY6zqfFF3uWExed4DPIg81Iw=="
-   ````
-   
+   resolved  https://something
+   resolved  https://something.duplicate # duplicate field
+   integrity sha512-xyz
+   integrity sha512-xyz-duplicate # duplicate field
+```
 ## Duplicate package handling
 
- - duplicated package are ignored, the original correct version gets installed,yarn.lock file not updated
+Duplicated package entries are ignored, the first entry gets installed.
    ````
    corepack@^0.14.1:
    version "0.14.1"
    resolved "https://registry.yarnpkg.com/corepack/-/corepack-0.14.1.tgz#c0a4a3e2cf972a6320ad459bd3a1b55650f35b55"
    integrity sha512-vTxmM8ktrK0OR4qZskfCrjiybCRoLBZrx/UVO3srXnkJK3Kf7/D+DU2ZH2kqrev5NAKEbBivTydzWYdF08KrQg==
 
-   corepack@^0.14.1: #duplicate
+   corepack@^0.14.1: # duplicate
    version "0.14.1"
-   resolved "https://registry.yarnpkg.com/corepack/-/corepack-0.14.1.tgz#c0a4a3e2cf972a6320ad459bd3a1b55650f35b55"
-   integrity sha512-vTxmM8ktrK0OR4qZskfCrjiybCRoLBZrx/UVO3srXnkJK3Kf7/D+DU2ZH2kqrev5NAKEbBivTydzWYdF08KrQg==
+   resolved "https://registry.yarnpkg.com/corepack/-/corepack-0.14.1.tgz#Duplicate"
+   integrity sha512-Duplicate
    ````
+   Note: yarn does not remove the duplicate entry from the lockfile.
 
+## Swapping Package Fields
+Swapping a package's ``resolved`` and ``integrity`` fields with another's will install the package as the other. For example:
+````
+   pkgA@^0.5.1:
+   version "0.5.1"
+   resolved "https://registry.yarnpkg.com/pkgB"  # swapped with pkgB
+   integrity sha512-pkgB # swapped with pkgB
+
+   pkgB@^0.14.1:
+   version "0.14.1"
+   resolved "https://registry.yarnpkg.com/pkgA" # swapped with pkgA
+   integrity sha512-pkgA  # swapped with pkgA
+````
+This will install ``pkgB`` as ``pkgA`` and vice versa!
