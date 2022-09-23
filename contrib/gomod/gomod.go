@@ -26,7 +26,7 @@ func destructureLine(line []string) (string, string, string) {
 func parseLine(line string, lineNum int) (string, string, string, error) {
 	lineSplit := strings.Split(line, " ")
 	if len(lineSplit) != 3 {
-		return "","","", fmt.Errorf("Invalid entry on line %d", lineNum)
+		return "", "", "", fmt.Errorf("Invalid entry on line %d", lineNum)
 	}
 	name, version, checksum := destructureLine(lineSplit)
 	return name, version, checksum, nil
@@ -37,16 +37,16 @@ func ParseLockfile(lockfile *string) (Lockfile, error) {
 	lines := strings.Split(*lockfile, "\n")
 	for i := 0; i < len(lines); {
 		if lines[i] != "" {
-			name, version, checksum, err := parseLine(lines[i], i + 1)
+			name, version, checksum, err := parseLine(lines[i], i+1)
 			if err != nil {
 				return parsedLockfile, err
 			}
 			if lines[i+1] == "" {
 				return parsedLockfile, fmt.Errorf(
-				"Expected go.mod entry for %s on line %d",
-				name,
-				i+2,
-			)
+					"Expected go.mod entry for %s on line %d",
+					name,
+					i+2,
+				)
 			}
 			secondLineName, secondLineVersion, secondLineChecksum, err := parseLine(lines[i+1], i+2)
 			if err != nil {
@@ -81,6 +81,44 @@ func ParseLockfile(lockfile *string) (Lockfile, error) {
 	return parsedLockfile, nil
 }
 
+func removeVersionFromDepString(dep string) string {
+	return strings.Split(dep, "@")[0]
+}
+
+func parseSubDependencyGraph(subDeps string) (map[string][]string, error) {
+	graph := make(map[string][]string, 0)
+	lines := strings.Split(subDeps, "\n")
+	for lineNum, line := range lines {
+		splitLine := strings.Split(line, " ")
+		if len(splitLine) != 2 {
+			return graph, fmt.Errorf(
+				"Invalid \"go mod graph\" line entry. Line number %d",
+				lineNum+1,
+			)
+		}
+		dep := removeVersionFromDepString(splitLine[0])
+		subDep := removeVersionFromDepString(splitLine[1])
+		graph[dep] = append(graph[dep], subDep)
+
+	}
+	return graph, nil
+}
+
+func parseSubDependencies(lockfile *Lockfile, graph string) error {
+	subDeps, err := parseSubDependencyGraph(string(graph))
+	if err != nil {
+		return err
+	}
+	for index, dep := range lockfile.Packages {
+		for _, subDep := range subDeps[dep.Name] {
+			lockfile.Packages[index].Dependencies = append(
+				lockfile.Packages[index].Dependencies,
+				subDep,
+			)
+		}
+	}
+	return nil
+}
 func Diff(rootFile *string, oldLockfile *string, newLockfile *string, diffList *[]core.Diff) error {
 	return nil
 }

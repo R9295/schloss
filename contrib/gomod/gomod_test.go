@@ -62,7 +62,6 @@ github.com/R9295/schloss v0.1/go.mod h1:hashModFile`
 
 func TestParseLockfileMultiplePkgs(t *testing.T) {
 	lockfileString, count := getRandLockfileString()
-	fmt.Println(lockfileString)
 	parsedLockfile, err := ParseLockfile(&lockfileString)
 	if err != nil {
 		panic(err)
@@ -142,4 +141,59 @@ github.com/R9295/NotSchloss v1.0 h1:hash`
 			),
 		)
 	}
+}
+
+func TestParseSubDependenciesGraph(t *testing.T) {
+	graph := `github.com/R9295/schloss github.com/R9295/parserkiosk@v0.0.1
+github.com/R9295/schloss gopkg.in/yaml@v2.2.2
+github.com/R9295/parserkiosk@v0.0.1 gopkg.in/ruebezahl@v2.1.3`
+	parsed, err := parseSubDependencyGraph(graph)
+	assert.Equal(t, err, nil)
+	expected := make(map[string][]string, 0)
+	expected["github.com/R9295/schloss"] = []string{"github.com/R9295/parserkiosk", "gopkg.in/yaml"}
+	expected["github.com/R9295/parserkiosk"] = []string{"gopkg.in/ruebezahl"}
+	assert.Equal(t, expected, parsed)
+}
+
+func TestParseSubDependencies(t *testing.T) {
+	lockfile := Lockfile{
+		Packages: []LockfilePackage{
+			{
+				Name:            "github.com/R9295/schloss",
+				Version:         "0.1",
+				Checksum:        "h1:hash",
+				ModfileChecksum: "h1:hashModFile",
+			},
+			{
+				Name:            "github.com/R9295/parserkiosk",
+				Version:         "0.0.1",
+				Checksum:        "h1:hash",
+				ModfileChecksum: "h1:hashModFile",
+			},
+			{
+				Name:            "gopkg.in/yaml",
+				Version:         "0.0.3",
+				Checksum:        "h1:hash",
+				ModfileChecksum: "h1:hashModFile",
+			},
+			{
+				Name:            "gopkg.in/ruebezahl",
+				Version:         "0.0.4",
+				Checksum:        "h1:hash",
+				ModfileChecksum: "h1:hashModFile",
+			},
+		},
+	}
+	graphString := `github.com/R9295/schloss github.com/R9295/parserkiosk@v0.0.1
+github.com/R9295/parserkiosk@v0.0.1 gopkg.in/ruebezahl@v0.0.4
+github.com/R9295/parserkiosk@v0.0.1 gopkg.in/yaml@v0.0.3`
+	parseSubDependencies(&lockfile, graphString)
+	assert.Equal(t, lockfile.Packages[0].Dependencies, []string{"github.com/R9295/parserkiosk"})
+	assert.Equal(
+		t,
+		lockfile.Packages[1].Dependencies,
+		[]string{"gopkg.in/ruebezahl", "gopkg.in/yaml"},
+	)
+	assert.Equal(t, lockfile.Packages[2].Dependencies, []string(nil))
+	assert.Equal(t, lockfile.Packages[3].Dependencies, []string(nil))
 }
