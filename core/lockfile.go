@@ -24,6 +24,12 @@ func GetLockfileType(lockfileType string) (LockFileType, error) {
 			Format:   "toml",
 			RootFile: "pyproject.toml",
 		}, nil
+	case "yarn":
+		return LockFileType{
+			FileName: "yarn.lock",
+			Format: "custom",
+			RootFile: "package.json",
+		}, nil
 	}
 	return LockFileType{}, fmt.Errorf("cli: lockfile type \"%s\" is not supported.", lockfileType)
 }
