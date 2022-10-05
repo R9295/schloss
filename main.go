@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/R9295/schloss/contrib/cargo"
+	"github.com/R9295/schloss/contrib/gomod"
 	"github.com/R9295/schloss/contrib/poetry"
 	"github.com/R9295/schloss/core"
 	"github.com/jessevdk/go-flags"
@@ -81,6 +82,10 @@ func run() error {
 			var diffList []core.Diff
 			if args.LockfileType == "poetry" {
 				if err := poetry.Diff(&rootFile, &oldLockfile, &newLockfile, &diffList); err != nil {
+					return err
+				}
+			} else if args.LockfileType == "go" {
+				if err := gomod.Diff(&rootFile, &oldLockfile, &newLockfile, &diffList); err != nil {
 					return err
 				}
 			} else {

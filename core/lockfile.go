@@ -24,6 +24,12 @@ func GetLockfileType(lockfileType string) (LockFileType, error) {
 			Format:   "toml",
 			RootFile: "pyproject.toml",
 		}, nil
+	case "go":
+		return LockFileType{
+			FileName: "go.sum",
+			Format: "custom",
+			RootFile: "go.mod",
+		}, nil
 	}
 	return LockFileType{}, fmt.Errorf("cli: lockfile type \"%s\" is not supported.", lockfileType)
 }
