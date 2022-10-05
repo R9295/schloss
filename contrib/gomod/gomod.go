@@ -35,34 +35,34 @@ func parseLine(line string, lineNum int) (string, string, string, error) {
 func ParseLockfile(lockfile *string) (Lockfile, error) {
 	parsedLockfile := Lockfile{}
 	lines := strings.Split(*lockfile, "\n")
-	for i := 0; i < len(lines); {
-		if lines[i] != "" {
-			name, version, checksum, err := parseLine(lines[i], i+1)
+	for lineNum := 0; lineNum < len(lines); {
+		if lines[lineNum] != "" {
+			name, version, checksum, err := parseLine(lines[lineNum], lineNum+1)
 			if err != nil {
 				return parsedLockfile, err
 			}
-			if lines[i+1] == "" {
+			if lines[lineNum+1] == "" {
 				return parsedLockfile, fmt.Errorf(
 					"Expected go.mod entry for %s on line %d",
 					name,
-					i+2,
+					lineNum+2,
 				)
 			}
-			secondLineName, secondLineVersion, secondLineChecksum, err := parseLine(lines[i+1], i+2)
+			secondLineName, secondLineVersion, secondLineChecksum, err := parseLine(lines[lineNum+1], lineNum+2)
 			if err != nil {
 				return parsedLockfile, err
 			}
 			if name != secondLineName {
 				return parsedLockfile, fmt.Errorf(
 					"Invalid go.mod entry on line %d. Expected %s got %s",
-					i+2,
+					lineNum+2,
 					name,
 					secondLineName,
 				)
 			} else if secondLineVersion != fmt.Sprintf("%s/go.mod", version) {
 				return parsedLockfile, fmt.Errorf(
 					"Invalid go.mod entry on line %d. Expected %s got %s",
-					i+2,
+					lineNum+2,
 					name,
 					secondLineName,
 				)
@@ -73,9 +73,9 @@ func ParseLockfile(lockfile *string) (Lockfile, error) {
 				Checksum:        checksum,
 				ModfileChecksum: secondLineChecksum,
 			})
-			i += 2
+			lineNum += 2
 		} else {
-			i++
+			lineNum++
 		}
 	}
 	return parsedLockfile, nil
