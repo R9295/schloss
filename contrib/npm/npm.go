@@ -2,7 +2,6 @@ package npm
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"github.com/R9295/schloss/core"
 )
@@ -16,10 +15,10 @@ type Lockfile struct {
 }
 
 type LockfilePackage struct {
-	Version        string   `json:"version"`
-	Resolved       string   `json:"resolved"`
-	Integrity      string   `json:"integrity"`
-	Dependencies   []string `json:"dependencies"`
+	Version        string            `json:"version"`
+	Resolved       string            `json:"resolved"`
+	Integrity      string            `json:"integrity"`
+	Dependencies   map[string]string `json:"dependencies"`
 	ParentPackages []string
 }
 
@@ -34,13 +33,11 @@ func parseJson(lockfile string) (Lockfile, error) {
 func collectPackages(lockFile *Lockfile, diffList *[]core.Diff) {
 	for pkgName, pkg := range lockFile.Packages {
 		for _, subPkg := range pkg.Dependencies {
-
 			pgkSubdependency, exists := lockFile.SubPackages[subPkg]
 			// find subdependencies in json object dependencies
 			if exists {
 				pgkSubdependency.ParentPackages = append(pgkSubdependency.ParentPackages, pkgName)
 				lockFile.SubPackages[subPkg] = pgkSubdependency
-
 			} else {
 				*diffList = append(*diffList, core.MakeRemovedSubDependencyDiff(subPkg, pkgName))
 			}
@@ -117,7 +114,6 @@ func DiffLockfiles(
 }
 
 func Diff(rootFile *string, oldLockfile *string, newLockfile *string, diffList *[]core.Diff) error {
-	fmt.Println(*oldLockfile)
 	oldLockfileJson, err := parseJson(*oldLockfile)
 	if err != nil {
 		return err
