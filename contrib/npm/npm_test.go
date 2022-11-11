@@ -49,29 +49,6 @@ func getRandomLockfile() Lockfile {
 	return lockfile
 }
 
-func TestDiffLockfilesWithoutChanges(t *testing.T) {
-
-	oldLockfile := getRandomLockfile()
-	newLockfile := oldLockfile
-	var diffList []core.Diff
-	DiffLockfiles(&oldLockfile, &newLockfile, &diffList)
-	assert.Equal(t, len(diffList), 0)
-}
-
-func deepCopyLockfile(lockfile Lockfile) Lockfile {
-	copyLockfile := Lockfile{
-		Name:            lockfile.Name,
-		Version:         lockfile.Version,
-		LockfileVersion: lockfile.LockfileVersion,
-		Packages:        map[string]LockfilePackage{},
-	}
-	for k, v := range lockfile.Packages {
-		copyLockfile.Packages[k] = v
-	}
-	return copyLockfile
-
-}
-
 func deepCopyPackage(p LockfilePackage) LockfilePackage {
 	copyDependencies := make(map[string]string)
 
@@ -91,7 +68,29 @@ func deepCopyPackage(p LockfilePackage) LockfilePackage {
 	}
 }
 
-func TestDiffLockfilesModifiedVersionDependency(t *testing.T) {
+func deepCopyLockfile(lockfile Lockfile) Lockfile {
+	copyLockfile := Lockfile{
+		Name:            lockfile.Name,
+		Version:         lockfile.Version,
+		LockfileVersion: lockfile.LockfileVersion,
+		Packages:        map[string]LockfilePackage{},
+	}
+	for k, v := range lockfile.Packages {
+		copyLockfile.Packages[k] = v
+	}
+	return copyLockfile
+}
+
+func TestDiffLockfilesWithoutChanges(t *testing.T) {
+
+	oldLockfile := getRandomLockfile()
+	newLockfile := oldLockfile
+	var diffList []core.Diff
+	DiffLockfiles(&oldLockfile, &newLockfile, &diffList)
+	assert.Equal(t, len(diffList), 0)
+}
+
+func TestDiffLockfilesModifiedVersion(t *testing.T) {
 	oldLockfile := getRandomLockfile()
 	newLockfile := deepCopyLockfile(oldLockfile)
 	testPackage := getRandLockfilePkg()
@@ -108,7 +107,7 @@ func TestDiffLockfilesModifiedVersionDependency(t *testing.T) {
 	assert.Equal(t, expectedDiff, diffList[0])
 }
 
-func TestDiffLockfilesModifiedResolvedDependency(t *testing.T) {
+func TestDiffLockfilesModifiedResolved(t *testing.T) {
 	oldLockfile := getRandomLockfile()
 	newLockfile := deepCopyLockfile(oldLockfile)
 	testPackage := getRandLockfilePkg()
@@ -125,7 +124,7 @@ func TestDiffLockfilesModifiedResolvedDependency(t *testing.T) {
 	assert.Equal(t, expectedDiff, diffList[0])
 }
 
-func TestDiffLockfilesModifiedIntegrityDependency(t *testing.T) {
+func TestDiffLockfilesModifiedIntegrity(t *testing.T) {
 	oldLockfile := getRandomLockfile()
 	newLockfile := deepCopyLockfile(oldLockfile)
 	testPackage := getRandLockfilePkg()
@@ -142,7 +141,7 @@ func TestDiffLockfilesModifiedIntegrityDependency(t *testing.T) {
 	assert.Equal(t, expectedDiff, diffList[0])
 }
 
-func TestDiffLockfilesAddDependency(t *testing.T) {
+func TestDiffLockfilesAddPackage(t *testing.T) {
 	oldLockfile := getRandomLockfile()
 	newLockfile := deepCopyLockfile(oldLockfile)
 	addedPackage := getRandLockfilePkg()
@@ -151,6 +150,19 @@ func TestDiffLockfilesAddDependency(t *testing.T) {
 	var diffList []core.Diff
 	DiffLockfiles(&oldLockfile, &newLockfile, &diffList)
 	expectedDiff := core.MakeAddedDependencyDiff(packageName, addedPackage.Version, newLockfile.Name)
+	assert.Equal(t, len(diffList), 1)
+	assert.Equal(t, expectedDiff, diffList[0])
+}
+
+func TestDiffLockfilesRemovePackage(t *testing.T) {
+	oldLockfile := getRandomLockfile()
+	newLockfile := deepCopyLockfile(oldLockfile)
+	addedPackage := getRandLockfilePkg()
+	packageName := getRandomName()
+	oldLockfile.Packages[packageName] = addedPackage
+	var diffList []core.Diff
+	DiffLockfiles(&oldLockfile, &newLockfile, &diffList)
+	expectedDiff := core.MakeRemovedDependencyDiff(packageName)
 	assert.Equal(t, len(diffList), 1)
 	assert.Equal(t, expectedDiff, diffList[0])
 }
@@ -175,7 +187,7 @@ func TestDiffLockfilesAddSubDependency(t *testing.T) {
 	assert.Equal(t, expectedDiff, diffList[0])
 }
 
-func TestDiffLockfilesRemovedSubDependency(t *testing.T) {
+func TestDiffLockfilesRemovSubDependency(t *testing.T) {
 	oldLockfile := getRandomLockfile()
 	newLockfile := deepCopyLockfile(oldLockfile)
 
@@ -195,17 +207,63 @@ func TestDiffLockfilesRemovedSubDependency(t *testing.T) {
 	assert.Equal(t, expectedDiff, diffList[0])
 }
 
-func TestDiffLockfilesRemovedDependency(t *testing.T) {
+func TestDiffPackagesAbsentFieldVersion(t *testing.T) {
 	oldLockfile := getRandomLockfile()
 	newLockfile := deepCopyLockfile(oldLockfile)
-	addedPackage := getRandLockfilePkg()
+
+	testPackage := getRandLockfilePkg()
 	packageName := getRandomName()
-	oldLockfile.Packages[packageName] = addedPackage
+
+	oldLockfile.Packages[packageName] = testPackage
+	modifiedTestPackage := deepCopyPackage(testPackage)
+	modifiedTestPackage.Version = ""
+	newLockfile.Packages[packageName] = modifiedTestPackage
+
 	var diffList []core.Diff
 	DiffLockfiles(&oldLockfile, &newLockfile, &diffList)
-	expectedDiff := core.MakeRemovedDependencyDiff(packageName)
+	expectedDiff := core.MakeAbsentFieldDiff(packageName, "version")
 	assert.Equal(t, len(diffList), 1)
 	assert.Equal(t, expectedDiff, diffList[0])
+}
+func TestDiffPackagesAbsentFieldIntegrity(t *testing.T) {
+	oldLockfile := getRandomLockfile()
+	newLockfile := deepCopyLockfile(oldLockfile)
+
+	testPackage := getRandLockfilePkg()
+	packageName := getRandomName()
+
+	oldLockfile.Packages[packageName] = testPackage
+	modifiedTestPackage := deepCopyPackage(testPackage)
+	modifiedTestPackage.Integrity = ""
+	newLockfile.Packages[packageName] = modifiedTestPackage
+
+	var diffList []core.Diff
+	DiffLockfiles(&oldLockfile, &newLockfile, &diffList)
+	expectedDiff := core.MakeAbsentFieldDiff(packageName, "integrity")
+	assert.Equal(t, len(diffList), 1)
+	assert.Equal(t, expectedDiff, diffList[0])
+}
+func TestDiffPackagesAbsentFieldResolved(t *testing.T) {
+	oldLockfile := getRandomLockfile()
+	newLockfile := deepCopyLockfile(oldLockfile)
+
+	testPackage := getRandLockfilePkg()
+	packageName := getRandomName()
+
+	oldLockfile.Packages[packageName] = testPackage
+	modifiedTestPackage := deepCopyPackage(testPackage)
+	modifiedTestPackage.Resolved = ""
+	newLockfile.Packages[packageName] = modifiedTestPackage
+
+	var diffList []core.Diff
+	DiffLockfiles(&oldLockfile, &newLockfile, &diffList)
+	expectedDiff := core.MakeAbsentFieldDiff(packageName, "resolved")
+	assert.Equal(t, len(diffList), 1)
+	assert.Equal(t, expectedDiff, diffList[0])
+}
+
+func TestCollectPackages(t *testing.T) {
+
 }
 
 /*
@@ -216,10 +274,13 @@ func TestDiffLockfilesRemovedDependency(t *testing.T) {
 
 ( ) lockfile name, version, lockfile version
 
+( ) TestNoDuplicateModifiedSubDependencyWhenAdding
+( ) MakeModifiedSubDependencyDiff
+
 (x) happy path without changes
 field changes
 (x) modify field in dependency (for each field) [version, resolved, integrity]
-( ) remove field in dependency (for each field) [version, resolved, integrity]
+(x) remove field in dependency (for each field) [version, resolved, integrity]
 ( ) add field in dependency (for each field) [version, resolved, integrity]
 ( ) what about double field? How would json get parsed?
 
