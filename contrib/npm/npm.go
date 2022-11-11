@@ -120,6 +120,22 @@ func diffPackageSubDependencies(
 	}
 }
 
+func diffMetadata(
+	oldLockfile *Lockfile,
+	newLockfile *Lockfile,
+	diffList *[]core.Diff,
+) {
+	if oldLockfile.Version != newLockfile.Version {
+		*diffList = append(*diffList, core.MakeModifiedMetadataDiff("version", oldLockfile.Version, newLockfile.Version))
+	}
+	if oldLockfile.Name != newLockfile.Name {
+		*diffList = append(*diffList, core.MakeModifiedMetadataDiff("name", oldLockfile.Name, newLockfile.Name))
+	}
+	if oldLockfile.LockfileVersion != newLockfile.LockfileVersion {
+		*diffList = append(*diffList, core.MakeModifiedMetadataDiff("lockfileVersion", oldLockfile.LockfileVersion, newLockfile.LockfileVersion))
+	}
+}
+
 func DiffLockfiles(
 	oldLockfile *Lockfile,
 	newLockfile *Lockfile,
@@ -127,6 +143,9 @@ func DiffLockfiles(
 ) {
 	collectPackages(newLockfile, diffList)
 	collectPackages(oldLockfile, diffList)
+
+	diffMetadata(oldLockfile, newLockfile, diffList)
+
 	// check differences in packages
 	for oldPkgName, oldPkg := range oldLockfile.Packages {
 		newPkg, exists := newLockfile.Packages[oldPkgName]

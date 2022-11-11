@@ -262,6 +262,45 @@ func TestDiffPackagesAbsentFieldResolved(t *testing.T) {
 	assert.Equal(t, expectedDiff, diffList[0])
 }
 
+func TestDiffMetadataVersion(t *testing.T) {
+	oldLockfile := getRandomLockfile()
+	oldLockfile.Version = "2.2.1"
+	newLockfile := deepCopyLockfile(oldLockfile)
+	newLockfile.Version = "2.2.2"
+
+	var diffList []core.Diff
+	DiffLockfiles(&oldLockfile, &newLockfile, &diffList)
+	expectedDiff := core.MakeModifiedMetadataDiff("version", oldLockfile.Version, newLockfile.Version)
+	assert.Equal(t, len(diffList), 1)
+	assert.Equal(t, expectedDiff, diffList[0])
+}
+
+func TestDiffMetadataLockfileVersion(t *testing.T) {
+	oldLockfile := getRandomLockfile()
+	oldLockfile.LockfileVersion = "2.2.1"
+	newLockfile := deepCopyLockfile(oldLockfile)
+	newLockfile.LockfileVersion = "2.2.2"
+
+	var diffList []core.Diff
+	DiffLockfiles(&oldLockfile, &newLockfile, &diffList)
+	expectedDiff := core.MakeModifiedMetadataDiff("lockfileVersion", oldLockfile.LockfileVersion, newLockfile.LockfileVersion)
+	assert.Equal(t, len(diffList), 1)
+	assert.Equal(t, expectedDiff, diffList[0])
+}
+
+func TestDiffMetadataName(t *testing.T) {
+	oldLockfile := getRandomLockfile()
+	oldLockfile.Name = "my-project"
+	newLockfile := deepCopyLockfile(oldLockfile)
+	newLockfile.Name = "my-other-project"
+
+	var diffList []core.Diff
+	DiffLockfiles(&oldLockfile, &newLockfile, &diffList)
+	expectedDiff := core.MakeModifiedMetadataDiff("name", oldLockfile.Name, newLockfile.Name)
+	assert.Equal(t, len(diffList), 1)
+	assert.Equal(t, expectedDiff, diffList[0])
+}
+
 func TestCollectPackages(t *testing.T) {
 
 }
@@ -270,9 +309,9 @@ func TestCollectPackages(t *testing.T) {
 
 (x) create functions to create random diffs
 
-( ) unit test on small single methods => break up any of the methods? Unit tests => for collect packages check if parent dependency field is correct
+( ) unit test on small single methods => reak up any of the methods? Unit tests => for collect packages check if parent dependency field is correct
 
-( ) lockfile name, version, lockfile version
+(x) lockfile name, version, lockfile version
 
 ( ) TestNoDuplicateModifiedSubDependencyWhenAdding
 ( ) MakeModifiedSubDependencyDiff

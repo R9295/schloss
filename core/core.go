@@ -16,6 +16,7 @@ const (
 	DEPENDENCY     DiffMetaType = "dependency"
 	SUB_DEPENDENCY DiffMetaType = "sub-dependency"
 	FIELD          DiffMetaType = "field"
+	META_FIELD     DiffMetaType = "meta-field"
 )
 
 type Diff interface {
@@ -59,6 +60,14 @@ type FieldDiff struct {
 	NewValue string       `json:"new_value"`
 }
 
+type MetadataDiff struct {
+	Type      DiffType     `json:"type"`
+	MetaType  DiffMetaType `json:"meta_type"`
+	FieldName string       `json:"field"`
+	OldValue  string       `json:"old_value"`
+	NewValue  string       `json:"new_value"`
+}
+
 func (diff FieldDiff) RenderHumanReadable() string {
 	return fmt.Sprintf("%s %s %s\n- %s=%s\n+ %s=%s",
 		diff.Type,
@@ -78,6 +87,10 @@ func (diff FieldDiff) GetName() string {
 	return diff.Name
 }
 
+func (diff MetadataDiff) GetName() string {
+	return diff.FieldName
+}
+
 type AbsentFieldDiff struct {
 	Type     DiffType     `json:"type"`
 	MetaType DiffMetaType `json:"meta_type"`
@@ -89,7 +102,16 @@ func (diff AbsentFieldDiff) RenderHumanReadable() string {
 	return fmt.Sprintf("%s %s %s of %s", diff.Type, diff.MetaType, diff.Field, diff.Name)
 }
 
+// TODO: not correct new value missing
+func (diff MetadataDiff) RenderHumanReadable() string {
+	return fmt.Sprintf("%s %s %s of %s", diff.Type, diff.MetaType, diff.FieldName, diff.OldValue)
+}
+
 func (diff AbsentFieldDiff) GetType() DiffType {
+	return diff.Type
+}
+
+func (diff MetadataDiff) GetType() DiffType {
 	return diff.Type
 }
 
@@ -110,6 +132,20 @@ func MakeDependencyFieldDiff(
 		Field:    fieldName,
 		OldValue: oldVal,
 		NewValue: newVal,
+	}
+}
+
+func MakeModifiedMetadataDiff(
+	fieldName string,
+	oldVal string,
+	newVal string,
+) MetadataDiff {
+	return MetadataDiff{
+		Type:      ADDED,
+		MetaType:  META_FIELD,
+		FieldName: fieldName,
+		OldValue:  oldVal,
+		NewValue:  newVal,
 	}
 }
 
