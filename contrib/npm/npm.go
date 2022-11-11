@@ -33,14 +33,9 @@ func collectPackages(lockFile *Lockfile, diffList *[]core.Diff) {
 	for pkgName, pkg := range lockFile.Packages {
 		for _, depName := range pkg.Dependencies {
 			subPkg, exists := lockFile.Packages[depName]
-			// find subdependencies in json object dependencies
 			if exists {
 				subPkg.ParentPackages = append(subPkg.ParentPackages, pkgName)
 			}
-			// also in diffPackagesSubdependencies
-			/* else {
-				*diffList = append(*diffList, core.MakeRemovedSubDependencyDiff(depName, pkgName))
-			} */
 		}
 	}
 
@@ -54,27 +49,50 @@ func diffPackageFields(
 ) {
 	// check for changed fields
 	if oldPkg.Version != newPkg.Version {
-		*diffList = append(
-			*diffList,
-			core.MakeDependencyFieldDiff(oldPkgName, "version", oldPkg.Version, newPkg.Version),
-		)
+		if newPkg.Version == "" {
+			*diffList = append(
+				*diffList,
+				core.MakeAbsentFieldDiff(oldPkgName, "version"),
+			)
+		} else {
+			*diffList = append(
+				*diffList,
+				core.MakeDependencyFieldDiff(oldPkgName, "version", oldPkg.Version, newPkg.Version),
+			)
+		}
+
 	}
 	if oldPkg.Integrity != newPkg.Integrity {
-		*diffList = append(
-			*diffList,
-			core.MakeDependencyFieldDiff(
-				oldPkgName,
-				"integrity",
-				oldPkg.Integrity,
-				newPkg.Integrity,
-			),
-		)
+		if newPkg.Integrity == "" {
+			*diffList = append(
+				*diffList,
+				core.MakeAbsentFieldDiff(oldPkgName, "integrity"),
+			)
+		} else {
+			*diffList = append(
+				*diffList,
+				core.MakeDependencyFieldDiff(
+					oldPkgName,
+					"integrity",
+					oldPkg.Integrity,
+					newPkg.Integrity,
+				),
+			)
+		}
 	}
 	if oldPkg.Resolved != newPkg.Resolved {
-		*diffList = append(
-			*diffList,
-			core.MakeDependencyFieldDiff(oldPkgName, "resolved", oldPkg.Resolved, newPkg.Resolved),
-		)
+		if newPkg.Resolved == "" {
+			*diffList = append(
+				*diffList,
+				core.MakeAbsentFieldDiff(oldPkgName, "resolved"),
+			)
+		} else {
+			*diffList = append(
+				*diffList,
+				core.MakeDependencyFieldDiff(oldPkgName, "resolved", oldPkg.Resolved, newPkg.Resolved),
+			)
+		}
+
 	}
 }
 
