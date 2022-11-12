@@ -76,7 +76,7 @@ func deepCopyLockfile(lockfile Lockfile) Lockfile {
 		Packages:        map[string]LockfilePackage{},
 	}
 	for k, v := range lockfile.Packages {
-		copyLockfile.Packages[k] = v
+		copyLockfile.Packages[k] = deepCopyPackage(v)
 	}
 	return copyLockfile
 }
@@ -297,24 +297,94 @@ func TestDiffMetadataName(t *testing.T) {
 	var diffList []core.Diff
 	DiffLockfiles(&oldLockfile, &newLockfile, &diffList)
 	expectedDiff := core.MakeModifiedMetadataDiff("name", oldLockfile.Name, newLockfile.Name)
-	assert.Equal(t, len(diffList), 1)
+	assert.Equal(t, 1, len(diffList))
 	assert.Equal(t, expectedDiff, diffList[0])
 }
 
 func TestCollectPackages(t *testing.T) {
+	/*
+		test collectPackages on lockfile with nested dependency structure
+		package 1 + 5 as parent package
+		packages 2 + 3 subpackages of package 1
+		pacakge 4 subpackage of package 3 and 5
+	*/
+	testLockfile := getRandomLockfile()
 
+	package1 := getRandLockfilePkg()
+	package2 := getRandLockfilePkg()
+	package3 := getRandLockfilePkg()
+	package4 := getRandLockfilePkg()
+	package5 := getRandLockfilePkg()
+	name1 := getRandomName()
+	name2 := getRandomName()
+	name3 := getRandomName()
+	name4 := getRandomName()
+	name5 := getRandomName()
+
+	testLockfile.Packages[name1] = package1
+	testLockfile.Packages[name2] = package2
+	testLockfile.Packages[name3] = package3
+	testLockfile.Packages[name4] = package4
+	testLockfile.Packages[name5] = package5
+
+	testLockfile.Packages[name1].Dependencies[name2] = "2.0.2"
+	testLockfile.Packages[name1].Dependencies[name3] = "2.0.3"
+	testLockfile.Packages[name3].Dependencies[name4] = "2.0.4"
+	testLockfile.Packages[name5].Dependencies[name4] = "2.0.4"
+
+	expectedLockfile := deepCopyLockfile(testLockfile)
+	if entry, exists := expectedLockfile.Packages[name2]; exists {
+		entry.ParentPackages = append(expectedLockfile.Packages[name2].ParentPackages, name1)
+	} else {
+		t.Fail()
+	}
+	if entry, exists := expectedLockfile.Packages[name3]; exists {
+		entry.ParentPackages = append(expectedLockfile.Packages[name3].ParentPackages, name1)
+	} else {
+		t.Fail()
+	}
+	if entry, exists := expectedLockfile.Packages[name4]; exists {
+		entry.ParentPackages = append(expectedLockfile.Packages[name4].ParentPackages, name3, name5)
+	} else {
+		t.Fail()
+	}
+
+	collectPackages(&testLockfile)
+	assert.Equal(t, expectedLockfile, testLockfile)
+
+}
+
+func TestDiffLockfilesModifiedSubdependency(t *testing.T) {
+	oldLockfile := getRandomLockfile()
+	parentPackage := getRandLockfilePkg()
+	dependency := getRandLockfilePkg()
+	parentPackageName := getRandomName()
+	dependencyName := getRandomName()
+	oldLockfile.Packages[parentPackageName] = parentPackage
+	oldLockfile.Packages[dependencyName] = dependency
+	oldLockfile.Packages[parentPackageName].Dependencies[dependencyName] = "2.0.0"
+
+	newLockfile := deepCopyLockfile(oldLockfile)
+	newLockfile.Packages[parentPackageName].Dependencies[dependencyName] = "2.0.1"
+
+	var diffList []core.Diff
+	DiffLockfiles(&oldLockfile, &newLockfile, &diffList)
+	expectedDiff := core.MakeModifiedSubDependencyDiff(dependencyName, parentPackageName)
+	assert.Equal(t, 1, len(diffList))
+	assert.Equal(t, expectedDiff, diffList[0])
 }
 
 /*
 
 (x) create functions to create random diffs
 
-( ) unit test on small single methods => reak up any of the methods? Unit tests => for collect packages check if parent dependency field is correct
+(x) unit test on small single methods => reak up any of the methods? Unit tests => for collect packages check if parent dependency field is correct
 
 (x) lockfile name, version, lockfile version
 
-( ) TestNoDuplicateModifiedSubDependencyWhenAdding
-( ) MakeModifiedSubDependencyDiff
+(x) MakeModifiedSubDependencyDiff
+
+Bei MakeModifiedSubDependencyDiff gibt es nur versions unterschiede, values werden nicht an core weitergegeben und tauchen nicht in der ausgabe auf
 
 (x) happy path without changes
 field changes
@@ -323,14 +393,16 @@ field changes
 ( ) add field in dependency (for each field) [version, resolved, integrity]
 ( ) what about double field? How would json get parsed?
 
-
 (x) add entire new dependency
 (x) remove entire dependency
 
 (x) add subdependency
 (x) remove subdependency
 
-special case: added dependency is already there => dependency double
+( )NEW TASK => do it in caro
+	Refactor AddedDependencyDiff to AddedPackage and print parent packages so that it is clear wether it is a dependency or subdependency
+
+( ) special case: added dependency is already there => dependency duplicate (what if 2 packages need different version of package?)
 
 added subdependency => add package and add package name do existing pacakge dependencies list, 2 options:
 	subdependency is listed in package-lock
@@ -339,8 +411,7 @@ added subdependency => add package and add package name do existing pacakge depe
 
 added subdependency means adding a entry in package dependencies list
 
-( )NEW TASK => do it in caro
-Refactor AddedDependencyDiff to AddedPackage and print parent packages so that it is clear wether it is a dependency or subdependency
+
 
 What if supdependency package has been removed but dependency entry still in dependencies list(s)
 
