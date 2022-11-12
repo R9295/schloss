@@ -29,7 +29,7 @@ func parseJson(lockfile string) (Lockfile, error) {
 	return data, err
 }
 
-func collectPackages(lockFile *Lockfile, diffList *[]core.Diff) {
+func collectPackages(lockFile *Lockfile) {
 	for pkgName, pkg := range lockFile.Packages {
 		for _, depName := range pkg.Dependencies {
 			subPkg, exists := lockFile.Packages[depName]
@@ -103,12 +103,15 @@ func diffPackageSubDependencies(
 	diffList *[]core.Diff,
 ) {
 
-	for oldPkgDep, _ := range oldPkg.Dependencies {
+	for oldPkgDep, oldPkgDepVersion := range oldPkg.Dependencies {
 		exists := false
-		for _, newPkgDep := range newPkg.Dependencies {
+		for newPkgDep, newPkgDepVersion := range newPkg.Dependencies {
 			if newPkgDep == oldPkgDep {
 				exists = true
 				delete(newPkg.Dependencies, newPkgDep)
+				if oldPkgDepVersion != newPkgDepVersion {
+					*diffList = append(*diffList, core.MakeModifiedSubDependencyDiff(newPkgDep, oldPkgName))
+				}
 			}
 		}
 		if !exists {
@@ -141,8 +144,8 @@ func DiffLockfiles(
 	newLockfile *Lockfile,
 	diffList *[]core.Diff,
 ) {
-	collectPackages(newLockfile, diffList)
-	collectPackages(oldLockfile, diffList)
+	collectPackages(newLockfile)
+	collectPackages(oldLockfile)
 
 	diffMetadata(oldLockfile, newLockfile, diffList)
 
