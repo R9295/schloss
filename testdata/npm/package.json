@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@angular/common": "^14.2.2"
+    "@angular/common": "^14.2.2",
+    "express": "^4.18.2"
   }
 }
