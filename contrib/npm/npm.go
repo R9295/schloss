@@ -2,6 +2,7 @@ package npm
 
 import (
 	"encoding/json"
+	"strconv"
 
 	"github.com/R9295/schloss/core"
 )
@@ -9,7 +10,7 @@ import (
 type Lockfile struct {
 	Name            string                     `json:"name"`
 	Version         string                     `json:"version"`
-	LockfileVersion string                     `json:"lockfileVersion"`
+	LockfileVersion int                        `json:"lockfileVersion"`
 	Packages        map[string]LockfilePackage `json:"packages"`
 }
 
@@ -135,7 +136,7 @@ func diffMetadata(
 		*diffList = append(*diffList, core.MakeModifiedMetadataDiff("name", oldLockfile.Name, newLockfile.Name))
 	}
 	if oldLockfile.LockfileVersion != newLockfile.LockfileVersion {
-		*diffList = append(*diffList, core.MakeModifiedMetadataDiff("lockfileVersion", oldLockfile.LockfileVersion, newLockfile.LockfileVersion))
+		*diffList = append(*diffList, core.MakeModifiedMetadataDiff("lockfileVersion", strconv.Itoa(oldLockfile.LockfileVersion), strconv.Itoa(newLockfile.LockfileVersion)))
 	}
 }
 
@@ -181,14 +182,17 @@ func DiffLockfiles(
 } */
 
 func Diff(rootFile *string, oldLockfile *string, newLockfile *string, diffList *[]core.Diff) error {
+
 	oldLockfileJson, err := parseJson(*oldLockfile)
 	if err != nil {
 		return err
 	}
+
 	newLockfileJson, err := parseJson(*newLockfile)
 	if err != nil {
 		return err
 	}
+
 	DiffLockfiles(&oldLockfileJson, &newLockfileJson, diffList)
 	return nil
 }
