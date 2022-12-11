@@ -34,9 +34,6 @@ Relatively easy to detect that a hosting URL like  https://github.com/lirantal/m
 
 Exponential factor => if lockfile of widely used package is tempered this one attack opens the door to millions of other software attacks
 
-### Atackers perspective
-
-### How to prevent lockfile tampering
 
 
 ### References

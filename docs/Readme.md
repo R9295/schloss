@@ -175,6 +175,5 @@ When deleting the version of a package in package-lock.json npm does not complai
   ````
   version 14.2.2 gets installed
 
-## missing: check other fields for vulnerabilities
 ## Adding package that is not in package.json
 When adding a dependency to the package-lock.json file that is not a subdependency or a dependency in the package.json it does not get installed.
