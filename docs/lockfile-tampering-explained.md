@@ -7,7 +7,7 @@ The beauty of the open source world is that anybody can contribute, adding new f
 - package managers do not sufficiently verify the integrity of lockfiles
 - github interface defaults to floding diffs whenever they are larger than a couple of hundred lines of code in length => many don't carefully review lockfiles
 - lockfiles are machine-generated and small modifications are easily missed during code review due to the mass of changes included
-- havily usage of third-party packages 
+- havily usage of third-party packages
 
 ### Example
 
