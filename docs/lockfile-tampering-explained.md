@@ -35,6 +35,27 @@ Relatively easy to detect that a hosting URL like  https://github.com/lirantal/m
 Exponential factor => if lockfile of widely used package is tempered this one attack opens the door to millions of other software attacks
 
 
+## Schloss
+
+Schloss is a lockfile linting tool to better understand lockfile changes for a number of different package managers. The aim is to prevent lockfile tampering and secure the supply chain.
+
+1. First step is to detect changes that have been made and print them in a more readable way. 
+
+2. Second step is to add on top validators that estimate wheter a change looks suspicious or not.
+
+    Examples of validators we want to implement:
+- validate the use of HTTPS for all resolved URLs
+- validate wether resolved and integrity values have been modified without a modification of the package version
+- validate the URL pattern
+- validate whether package name and name in URL differ
+- validate whether package version and version in URL differ
+- validates a whitelist of allowed hosts
+- validate integrity hash type
+<br />
+<br />
+
+![example schloss](example-schloss-run.png)
+
 
 ### References
 https://snyk.io/blog/why-npm-lockfiles-can-be-a-security-blindspot-for-injecting-malicious-modules/
