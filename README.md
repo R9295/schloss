@@ -1,4 +1,5 @@
 ## Schloss
+## WIP / USE AT YOUR OWN RISK!
 
 Detect potential lockfile tampering as your dependencies grow.
 
